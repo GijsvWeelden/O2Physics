@@ -1,0 +1,57 @@
+{
+    "internal-dpl-clock": "",
+    "internal-dpl-aod-reader": {
+        "time-limit": "0",
+        "orbit-offset-enumeration": "0",
+        "orbit-multiplier-enumeration": "0",
+        "start-value-enumeration": "0",
+        "end-value-enumeration": "-1",
+        "step-value-enumeration": "1",
+        "aod-file": "\/Users\/gijsvanweelden\/Documents\/AO2D\/LHC18b_pass1\/AO2D.root"
+    },
+    "emcal-correction-task": "",
+    "internal-dpl-aod-spawner": "",
+    "internal-dpl-aod-index-builder": "",
+    "timestamp-task": {
+        "verbose": "false",
+        "rct-path": "RCT\/RunInformation",
+        "orbit-reset-path": "CTP\/Calib\/OrbitReset",
+        "ccdb-url": "http:\/\/alice-ccdb.cern.ch",
+        "isRun2MC": "false"
+    },
+    "bc-selection-task": {
+        "processRun2": "true",
+        "processRun3": "false"
+    },
+    "track-extension": "",
+    "event-selection-task": {
+        "syst": "PbPb",
+        "muonSelection": "0",
+        "customDeltaBC": "300",
+        "isMC": "false",
+        "processRun2": "true",
+        "processRun3": "false"
+    },
+    "track-selection": {
+        "isRun3": "false"
+    },
+    "jet-finder-data": {
+        "vertexZCut": "10",
+        "trackPtCut": "0.100000001",
+        "trackEtaCut": "0.899999976",
+        "DoRhoAreaSub": "false",
+        "DoConstSub": "false",
+        "jetPtMin": "10",
+        "jetR": {
+            "values": [
+                "0.40000000000000002"
+            ]
+        },
+        "jetType2": "1",
+        "processParticleLevel": "false",
+        "processDataCharged": "true",
+        "processDataFull": "false"
+    },
+    "internal-dpl-aod-global-analysis-file-sink": "",
+    "internal-dpl-aod-writer": ""
+}
