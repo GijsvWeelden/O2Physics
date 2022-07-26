@@ -30,6 +30,7 @@
 using namespace o2;
 using namespace o2::framework;
 using namespace o2::framework::expressions;
+using namespace o2::aod::track;
 
 AxisSpec ZAxis = {301, -30.1, 30.1};
 AxisSpec DeltaZAxis = {61, -6.1, 6.1};
@@ -39,6 +40,16 @@ AxisSpec MultAxis = {301, -0.5, 300.5};
 AxisSpec PhiAxis = {629, 0, 2 * M_PI};
 AxisSpec PtAxis = {2401, -0.005, 24.005};
 
+static constexpr TrackSelectionFlags::flagtype trackSelectionPattern = TrackSelectionFlags::kTrackType |
+                                                                       TrackSelectionFlags::kTPCNCls |
+                                                                       TrackSelectionFlags::kTPCCrossedRowsOverNCls |
+                                                                       TrackSelectionFlags::kTPCChi2NDF |
+                                                                       TrackSelectionFlags::kITSChi2NDF |
+                                                                       TrackSelectionFlags::kITSHits |
+                                                                       TrackSelectionFlags::kGoldenChi2 |
+                                                                       TrackSelectionFlags::kDCAz |
+                                                                       TrackSelectionFlags::kDCAxy;
+
 using LabeledTracks = soa::Join<aod::Tracks, aod::McTrackLabels>;
 
 struct MultiplicityCounter {
@@ -46,8 +57,8 @@ struct MultiplicityCounter {
 
   Configurable<float> estimatorEta{"estimatorEta", 1.0, "eta range for INEL>0 sample definition"};
   Configurable<bool> useEvSel{"useEvSel", true, "use event selection"};
-  Configurable<bool> useZDfiffCut{"useZDiffCut", true, "use Z difference cut"};
-  Configurable<float> maxZDiff{"maxZDiff", 1.0f, "max allowed Z difference for reconstruced collisions (cm)"};
+  Configurable<float> maxDCAZ{"maxDCAZ", 0.3f, "max track DCAZ"};
+  Configurable<bool> useDCAZcut{"useDCAZcut", true, "apply track DCAZ cut"};
   Configurable<bool> fillResponse{"fillResponse", false, "Fill response matrix"};
 
   HistogramRegistry registry{
@@ -60,7 +71,9 @@ struct MultiplicityCounter {
       {"Tracks/Control/PtEta", " ; p_{T} (GeV/c); #eta", {HistType::kTH2F, {PtAxis, EtaAxis}}},             //
       {"Tracks/Control/DCAXYPt", " ; p_{T} (GeV/c) ; DCA_{XY} (cm)", {HistType::kTH2F, {PtAxis, DCAAxis}}}, //
       {"Tracks/Control/DCAZPt", " ; p_{T} (GeV/c) ; DCA_{Z} (cm)", {HistType::kTH2F, {PtAxis, DCAAxis}}},   //
-      {"Events/Selection", ";status;events", {HistType::kTH1F, {{7, 0.5, 7.5}}}}                            //
+      {"Events/Selection", ";status;events", {HistType::kTH1F, {{7, 0.5, 7.5}}}},                           //
+      {"Events/Control/Chi2", " ; #chi^2", {HistType::kTH1F, {{101, -0.1, 10.1}}}},                         //
+      {"Events/Control/TimeResolution", " ; t (ms)", {HistType::kTH1F, {{1001, -0.1, 100.1}}}}              //
     }                                                                                                       //
   };
 
@@ -86,12 +99,10 @@ struct MultiplicityCounter {
       registry.add({"Tracks/Control/PtEtaGen", " ; p_{T} (GeV/c) ; #eta", {HistType::kTH2F, {PtAxis, EtaAxis}}});
 
       registry.add({"Tracks/PhiEtaGen", "; #varphi; #eta; tracks", {HistType::kTH2F, {PhiAxis, EtaAxis}}});
-      registry.add({"Tracks/PhiEtaGenDuplicates", "; #varphi; #eta; tracks", {HistType::kTH2F, {PhiAxis, EtaAxis}}});
-      registry.add({"Tracks/PhiEtaDuplicates", "; #varphi; #eta; tracks", {HistType::kTH2F, {PhiAxis, EtaAxis}}});
-      registry.add({"Events/Efficiency", "; status; events", {HistType::kTH1F, {{7, 0.5, 7.5}}}});
+      registry.add({"Tracks/Control/PhiEtaGenDuplicates", "; #varphi; #eta; tracks", {HistType::kTH2F, {PhiAxis, EtaAxis}}});
+      registry.add({"Tracks/Control/PhiEtaDuplicates", "; #varphi; #eta; tracks", {HistType::kTH2F, {PhiAxis, EtaAxis}}});
+      registry.add({"Events/Efficiency", "; status; events", {HistType::kTH1F, {{5, 0.5, 5.5}}}});
       registry.add({"Events/NotFoundEventZvtx", " ; Z_{vtx} (cm)", {HistType::kTH1F, {ZAxis}}});
-
-      registry.add({"Events/ZposDiff", " ; Z_{rec} - Z_{gen} (cm)", {HistType::kTH1F, {DeltaZAxis}}});
 
       if (fillResponse) {
         registry.add({"Events/Response", " ; N_{rec}; N_{gen}; Z_{vtx} (cm)", {HistType::kTH3F, {MultAxis, MultAxis, ZAxis}}});
@@ -106,8 +117,6 @@ struct MultiplicityCounter {
       x->SetBinLabel(3, "Reconstructed");
       x->SetBinLabel(4, "Selected");
       x->SetBinLabel(5, "Selected INEL>0");
-      x->SetBinLabel(6, "Selected (Zdiff)");
-      x->SetBinLabel(7, "Selected INEL>0 (ZDiff)");
     }
 
     if (doprocessTrackEfficiency) {
@@ -120,6 +129,8 @@ struct MultiplicityCounter {
       registry.add({"Tracks/Control/PtEfficiencyI", " ; p_{T} (GeV/c)", {HistType::kTH1F, {PtAxis}}});
       registry.add({"Tracks/Control/PtEfficiencyINoEtaCut", " ; p_{T} (GeV/c)", {HistType::kTH1F, {PtAxis}}});
       registry.add({"Tracks/Control/PtEfficiencyISecondaries", " ; p_{T} (GeV/c)", {HistType::kTH1F, {PtAxis}}});
+      registry.add({"Tracks/Control/Mask", " ; bit", {HistType::kTH1F, {{17, -0.5, 16.5}}}});
+      registry.add({"Tracks/Control/ITSClusters", " ; layer", {HistType::kTH1F, {{8, 0.5, 8.5}}}});
     }
   }
 
@@ -147,15 +158,19 @@ struct MultiplicityCounter {
             registry.fill(HIST("Events/Selection"), 7.);
           }
         }
+        for (auto& col : cols) {
+          registry.fill(HIST("Events/Control/Chi2"), col.chi2());
+          registry.fill(HIST("Events/Control/TimeResolution"), col.collisionTimeRes());
+        }
       }
     }
   }
 
   PROCESS_SWITCH(MultiplicityCounter, processEventStat, "Collect event sample stats", false);
 
-  expressions::Filter ITStracks = (aod::track::detectorMap & (uint8_t)o2::aod::track::ITS) != (uint8_t)0;
+  expressions::Filter trackSelectionFilter = (aod::track::trackCutFlag & trackSelectionPattern) == trackSelectionPattern;
 
-  using ExTracks = soa::Join<aod::Tracks, aod::TracksExtra, aod::TracksDCA>;
+  using ExTracks = soa::Join<aod::Tracks, aod::TracksExtra, aod::TrackSelection, aod::TracksDCA>;
   using FiTracks = soa::Filtered<ExTracks>;
   Partition<FiTracks> sample = nabs(aod::track::eta) < estimatorEta;
 
@@ -189,7 +204,7 @@ struct MultiplicityCounter {
   PROCESS_SWITCH(MultiplicityCounter, processCounting, "Count tracks", false);
 
   using Particles = soa::Filtered<aod::McParticles>;
-  using LabeledTracksEx = soa::Join<LabeledTracks, aod::TracksExtra, aod::TracksDCA>;
+  using LabeledTracksEx = soa::Join<LabeledTracks, aod::TracksExtra, aod::TrackSelection, aod::TracksDCA>;
   using Particle = Particles::iterator;
   using ParticlesI = soa::Join<aod::McParticles, aod::ParticlesToTracks>;
   expressions::Filter primaries = (aod::mcparticle::flags & (uint8_t)o2::aod::mcparticle::enums::PhysicalPrimary) == (uint8_t)o2::aod::mcparticle::enums::PhysicalPrimary;
@@ -210,11 +225,6 @@ struct MultiplicityCounter {
         continue;
       }
       auto mcCollision = collision.mcCollision();
-      if (useZDfiffCut) {
-        if (std::abs(collision.posZ() - mcCollision.posZ()) > maxZDiff) {
-          continue;
-        }
-      }
       auto particlesI = primariesI->sliceByCached(aod::mcparticle::mcCollisionId, mcCollision.globalIndex());
       particlesI.bindExternalIndices(&tracks);
 
@@ -234,6 +244,9 @@ struct MultiplicityCounter {
           auto counter = 0;
           auto relatedTracks = particle.tracks_as<soa::Filtered<LabeledTracksEx>>();
           for (auto& track : relatedTracks) {
+            if (useDCAZcut && std::abs(track.dcaZ()) > maxDCAZ) {
+              continue;
+            }
             ++counter;
             if (!countedNoEtaCut) {
               registry.fill(HIST("Tracks/Control/PtEfficiencyINoEtaCut"), particle.pt());
@@ -249,10 +262,35 @@ struct MultiplicityCounter {
               registry.fill(HIST("Tracks/Control/PtEfficiencyISecondaries"), particle.pt());
             }
           }
-          if (relatedTracks.size() > 1) {
-            registry.fill(HIST("Tracks/PhiEtaGenDuplicates"), particle.phi(), particle.eta());
+          if (counter > 1) {
             for (auto& track : relatedTracks) {
-              registry.fill(HIST("Tracks/PhiEtaDuplicates"), track.phi(), track.eta());
+              if (useDCAZcut && std::abs(track.dcaZ()) > maxDCAZ) {
+                continue;
+              }
+              for (auto layer = 0; layer < 7; ++layer) {
+                if (track.itsClusterMap() & (uint8_t(1) << layer)) {
+                  registry.fill(HIST("Tracks/Control/ITSClusters"), layer + 1);
+                }
+              }
+              auto hasbit = false;
+              for (auto bit = 0; bit < 16; ++bit) {
+                if (track.mcMask() & (uint8_t(1) << bit)) {
+                  registry.fill(HIST("Tracks/Control/Mask"), bit);
+                  hasbit = true;
+                }
+              }
+              if (!hasbit) {
+                registry.fill(HIST("Tracks/Control/Mask"), 16);
+              }
+            }
+          }
+          if (relatedTracks.size() > 1) {
+            registry.fill(HIST("Tracks/Control/PhiEtaGenDuplicates"), particle.phi(), particle.eta());
+            for (auto& track : relatedTracks) {
+              if (useDCAZcut && std::abs(track.dcaZ()) > maxDCAZ) {
+                continue;
+              }
+              registry.fill(HIST("Tracks/Control/PhiEtaDuplicates"), track.phi(), track.eta());
             }
           }
         }
@@ -276,11 +314,6 @@ struct MultiplicityCounter {
         continue;
       }
       auto mcCollision = collision.mcCollision();
-      if (useZDfiffCut) {
-        if (std::abs(collision.posZ() - mcCollision.posZ()) > maxZDiff) {
-          continue;
-        }
-      }
       auto particles = mcSample->sliceByCached(aod::mcparticle::mcCollisionId, mcCollision.globalIndex());
       auto tracks = lsample->sliceByCached(aod::track::collisionId, collision.globalIndex());
       tracks.bindExternalIndices(&mcParticles);
@@ -349,12 +382,6 @@ struct MultiplicityCounter {
           registry.fill(HIST("Events/Efficiency"), 5.);
         }
 
-        registry.fill(HIST("Events/ZposDiff"), collision.posZ() - mcCollision.posZ());
-        if (useZDfiffCut) {
-          if (std::abs(collision.posZ() - mcCollision.posZ()) > maxZDiff) {
-            continue;
-          }
-        }
         registry.fill(HIST("Events/Efficiency"), 6.);
         ++moreThanOne;
         atLeastOne = true;

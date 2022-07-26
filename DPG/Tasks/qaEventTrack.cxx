@@ -103,6 +103,7 @@ struct qaEventTrack {
   HistogramRegistry histos;
 
   Preslice<aod::McParticles> perMcCollision = aod::mcparticle::mcCollisionId;
+  Preslice<aod::Tracks> perRecoCollision = aod::track::collisionId;
 
   void init(InitContext const&);
 
@@ -161,16 +162,25 @@ struct qaEventTrack {
     return true;
   }
 
-  // General function to fill data and MC histograms
-  template <bool IS_MC, typename C, typename T>
-  void fillRecoHistograms(const C& collision, const T& tracks, aod::FullTracks const& tracksUnfiltered);
+  // General functions to fill data and MC histograms
+  template <bool IS_MC, typename T>
+  void fillRecoHistogramsAllTracks(const T& tracks);
+  template <bool IS_MC, typename C, typename T, typename T_UNF>
+  void fillRecoHistogramsGroupedTracks(const C& collision, const T& tracks, const T_UNF& tracksUnfiltered);
 
   // Process function for data
   using CollisionTableData = soa::Join<aod::Collisions, aod::EvSels>;
   using TrackTableData = soa::Join<aod::FullTracks, aod::TracksCov, aod::TracksDCA, aod::TrackSelection>;
-  void processData(CollisionTableData::iterator const& collision, soa::Filtered<TrackTableData> const& tracks, aod::FullTracks const& tracksUnfiltered)
+  void processData(CollisionTableData const& collisions, soa::Filtered<TrackTableData> const& tracks, aod::FullTracks const& tracksUnfiltered)
   {
-    fillRecoHistograms<false>(collision, tracks, tracksUnfiltered);
+    /// work with all tracks
+    fillRecoHistogramsAllTracks<false>(tracks);
+    /// work with collision grouping
+    for (auto const& collision : collisions) {
+      const auto& tracksColl = tracks.sliceBy(perRecoCollision, collision.globalIndex());
+      const auto& tracksUnfilteredColl = tracksUnfiltered.sliceBy(perRecoCollision, collision.globalIndex());
+      fillRecoHistogramsGroupedTracks<false>(collision, tracksColl, tracksUnfilteredColl);
+    }
   }
   PROCESS_SWITCH(qaEventTrack, processData, "process data", false);
 
@@ -246,10 +256,87 @@ struct qaEventTrack {
   // Process function for MC
   using CollisionTableMC = soa::Join<CollisionTableData, aod::McCollisionLabels>;
   using TrackTableMC = soa::Join<TrackTableData, aod::McTrackLabels>;
-  void processMC(CollisionTableMC::iterator const& collision, soa::Filtered<TrackTableMC> const& tracks, aod::FullTracks const& tracksUnfiltered,
+  void processMC(CollisionTableMC const& collisions, soa::Filtered<TrackTableMC> const& tracks, aod::FullTracks const& tracksUnfiltered,
                  aod::McParticles const& mcParticles, aod::McCollisions const& mcCollisions)
   {
-    fillRecoHistograms<true>(collision, tracks, tracksUnfiltered);
+    /// work with all tracks
+    fillRecoHistogramsAllTracks<true>(tracks);
+    /// work with collision grouping
+    for (auto const& collision : collisions) {
+      const auto& tracksColl = tracks.sliceBy(perRecoCollision, collision.globalIndex());
+      const auto& tracksUnfilteredColl = tracksUnfiltered.sliceBy(perRecoCollision, collision.globalIndex());
+      fillRecoHistogramsGroupedTracks<true>(collision, tracksColl, tracksUnfilteredColl);
+    }
+
+    /// check correct track-to-vertex matching exploiting MC info
+    std::vector<int> vec_coll_index_mismatched = {};
+    for (auto& track : tracks) {
+      histos.fill(HIST("Tracks/TestMCtrackToVtxMatch/ptAllTracks"), track.pt());
+      bool has_MCparticle = track.has_mcParticle();
+      if (track.collisionId() >= 0) {
+        /// track associated to a reconstructed collision
+        histos.fill(HIST("Tracks/TestMCtrackToVtxMatch/ptAllTracksInColl"), track.pt());
+        if (has_MCparticle) {
+          /// the track is not fake
+          auto particle = track.mcParticle();
+          auto collReco = track.collision_as<CollisionTableMC>();
+          auto collMC = particle.mcCollision();
+          auto mcCollID_recoColl = collReco.mcCollisionId();
+          auto mcCollID_particle = particle.mcCollisionId();
+          bool indexMatchOK = (mcCollID_recoColl == mcCollID_particle);
+          double pvZdiff = collReco.posZ() - collMC.posZ();
+          if (indexMatchOK) {
+            /// mc collision indices from the two sides match
+            if (particle.isPhysicalPrimary()) {
+              histos.fill(HIST("Tracks/TestMCtrackToVtxMatch/ptVsDpvZgoodMatchPhysPrim"), pvZdiff, track.pt());
+            } else if (particle.getProcess() == 4) {
+              histos.fill(HIST("Tracks/TestMCtrackToVtxMatch/ptVsDpvZgoodMatchSecondary"), pvZdiff, track.pt());
+            } else {
+              histos.fill(HIST("Tracks/TestMCtrackToVtxMatch/ptVsDpvZgoodMatchMaterial"), pvZdiff, track.pt());
+            }
+          } else {
+            /// mc collision indices from the two sides do not match
+            if (particle.isPhysicalPrimary()) {
+              histos.fill(HIST("Tracks/TestMCtrackToVtxMatch/ptVsDpvZbadMatchPhysPrim"), pvZdiff, track.pt());
+            } else if (particle.getProcess() == 4) {
+              histos.fill(HIST("Tracks/TestMCtrackToVtxMatch/ptVsDpvZbadMatchSecondary"), pvZdiff, track.pt());
+            } else {
+              histos.fill(HIST("Tracks/TestMCtrackToVtxMatch/ptVsDpvZbadMatchMaterial"), pvZdiff, track.pt());
+            }
+            /// event properties for collisions containing mismathced tracks
+            auto it = std::find(vec_coll_index_mismatched.begin(), vec_coll_index_mismatched.end(), collReco.globalIndex());
+            if (it == vec_coll_index_mismatched.end()) {
+              /// collision not yet considered, fill the distributions
+              // LOG(info) << "===> collision " << collReco.globalIndex() << " not found yet! Fill the distributions";
+              // LOG(info) << "     vector dim: " << vec_coll_index_mismatched.size();
+              const double nTracksInColl = tracks.sliceBy(perRecoCollision, collReco.globalIndex()).size();
+              histos.fill(HIST("Tracks/TestMCtrackToVtxMatch/hPVxCollWithMismTrk"), collReco.posX());
+              histos.fill(HIST("Tracks/TestMCtrackToVtxMatch/hPVyCollWithMismTrk"), collReco.posY());
+              histos.fill(HIST("Tracks/TestMCtrackToVtxMatch/hPVzCollWithMismTrk"), collReco.posZ());
+              histos.fill(HIST("Tracks/TestMCtrackToVtxMatch/hPVcontrCollWithMismTrk"), collReco.numContrib());
+              histos.fill(HIST("Tracks/TestMCtrackToVtxMatch/hNTracksCollWithMismTrk"), nTracksInColl);
+              vec_coll_index_mismatched.push_back(collReco.globalIndex());
+            }
+          }
+        }
+
+      } else {
+        /// track not associated to any reconstructed collision
+        histos.fill(HIST("Tracks/TestMCtrackToVtxMatch/ptAllTracksWoColl"), track.pt());
+        if (track.has_mcParticle()) {
+          auto particle = track.mcParticle();
+          int prodProcess = -1;
+          if (particle.isPhysicalPrimary()) {
+            prodProcess = 0;
+          } else if (particle.getProcess() == 4) {
+            prodProcess = 1;
+          } else {
+            prodProcess = 2;
+          }
+          histos.fill(HIST("Tracks/TestMCtrackToVtxMatch/ptVsOriginUnmatchedwithMCpart"), prodProcess, track.pt());
+        }
+      }
+    }
   }
   PROCESS_SWITCH(qaEventTrack, processMC, "process mc", true); // FIXME: would like to disable this by default and swich on via --processMC but currently this crashes -> ask experts
 
@@ -473,6 +560,42 @@ void qaEventTrack::init(InitContext const&)
   histos.add("Tracks/Kine/relativeResoPt", "relative #it{p}_{T} resolution;#sigma{#it{p}}/#it{p}_{T};#it{p}_{T}", kTH2D, {{axisPt, {100, 0., 0.3}}});
   histos.add("Tracks/Kine/relativeResoPtMean", "mean relative #it{p}_{T} resolution;#LT#sigma{#it{p}}/#it{p}_{T}#GT;#it{p}_{T}", kTProfile, {{axisPt}});
 
+  // count tracks matched to a collision
+  auto h1 = histos.add<TH1>("Tracks/KineUnmatchTracks/trackCollMatch", "Track - collision matching", kTH1F, {{4, 0.5, 4.5, ""}});
+  h1->GetXaxis()->SetBinLabel(h1->FindBin(1), "all tracks");
+  h1->GetXaxis()->SetBinLabel(h1->FindBin(2), "tracks matched to coll.");
+  h1->GetXaxis()->SetBinLabel(h1->FindBin(3), "tracks unmatched");
+  h1->GetXaxis()->SetBinLabel(h1->FindBin(4), "(MC) fake tracks");
+  // kine histograms for tracks not matched to collisions
+  histos.add("Tracks/KineUnmatchTracks/pt", "#it{p}_{T}", kTH1D, {axisPt});
+  histos.add("Tracks/KineUnmatchTracks/eta", "#eta", kTH1D, {axisEta});
+  histos.add("Tracks/KineUnmatchTracks/phi", "#varphi", kTH1D, {axisPhi});
+
+  /// check correct track-to-vertex matching (MC)
+  if (doprocessMC) {
+    histos.add("Tracks/TestMCtrackToVtxMatch/ptAllTracks", "all tracks (MC)", kTH1D, {axisPt});
+    histos.add("Tracks/TestMCtrackToVtxMatch/ptAllTracksInColl", "all tracks in collision (MC)", kTH1D, {axisPt});
+    histos.add("Tracks/TestMCtrackToVtxMatch/ptAllTracksWoColl", "all tracks w/o collision (MC)", kTH1D, {axisPt});
+    auto hUnmatched = histos.add<TH2>("Tracks/TestMCtrackToVtxMatch/ptVsOriginUnmatchedwithMCpart", "tracks with part. not matched to reco. coll. (MC)", kTH2D, {{4, -1.5, 2.5}, axisPt});
+    hUnmatched->GetXaxis()->SetBinLabel(hUnmatched->GetXaxis()->FindBin(-1.), "not found");
+    hUnmatched->GetXaxis()->SetBinLabel(hUnmatched->GetXaxis()->FindBin(0.), "Phys. prim.");
+    hUnmatched->GetXaxis()->SetBinLabel(hUnmatched->GetXaxis()->FindBin(1.), "Secondary");
+    hUnmatched->GetXaxis()->SetBinLabel(hUnmatched->GetXaxis()->FindBin(2.), "Material");
+    histos.add("Tracks/TestMCtrackToVtxMatch/ptVsDpvZgoodMatchPhysPrim", "good track-to-vtx matching phys. prim. (MC)", kTH2D, {{100, -0.1, 0.1, "pvZ(reco coll.) - pvZ(MC coll.)"}, axisPt});
+    histos.add("Tracks/TestMCtrackToVtxMatch/ptVsDpvZbadMatchPhysPrim", "bad track-to-vtx matching phys. prim. (MC)", kTH2D, {{100, -0.1, 0.1, "pvZ(reco coll.) - pvZ(MC coll.)"}, axisPt});
+    histos.add("Tracks/TestMCtrackToVtxMatch/ptVsDpvZgoodMatchSecondary", "good track-to-vtx matching secondary (MC)", kTH2D, {{100, -0.1, 0.1, "pvZ(reco coll.) - pvZ(MC coll.)"}, axisPt});
+    histos.add("Tracks/TestMCtrackToVtxMatch/ptVsDpvZbadMatchSecondary", "bad track-to-vtx matching secondary (MC)", kTH2D, {{100, -0.1, 0.1, "pvZ(reco coll.) - pvZ(MC coll.)"}, axisPt});
+    histos.add("Tracks/TestMCtrackToVtxMatch/ptVsDpvZgoodMatchMaterial", "good track-to-vtx matching material (MC)", kTH2D, {{100, -0.1, 0.1, "pvZ(reco coll.) - pvZ(MC coll.)"}, axisPt});
+    histos.add("Tracks/TestMCtrackToVtxMatch/ptVsDpvZbadMatchMaterial", "bad track-to-vtx matching material (MC)", kTH2D, {{100, -0.1, 0.1, "pvZ(reco coll.) - pvZ(MC coll.)"}, axisPt});
+
+    // event properties for collisions containing mismathced tracks
+    histos.add("Tracks/TestMCtrackToVtxMatch/hPVxCollWithMismTrk", "x coordinate of PV for collisions containing a mismatched track;;counts;", kTH1D, {axisVertexPosX});
+    histos.add("Tracks/TestMCtrackToVtxMatch/hPVyCollWithMismTrk", "y coordinate of PV for collisions containing a mismatched track;;counts;", kTH1D, {axisVertexPosY});
+    histos.add("Tracks/TestMCtrackToVtxMatch/hPVzCollWithMismTrk", "z coordinate of PV for collisions containing a mismatched track;;counts;", kTH1D, {axisVertexPosZ});
+    histos.add("Tracks/TestMCtrackToVtxMatch/hPVcontrCollWithMismTrk", "number of PV contributors for collisions containing a mismatched track;;counts;", kTH1D, {axisVertexNumContrib});
+    histos.add("Tracks/TestMCtrackToVtxMatch/hNTracksCollWithMismTrk", "number of tracks for collisions containing a mismatched track;;counts;", kTH1D, {axisTrackMultiplicity});
+  }
+
   // track histograms
   auto hselAxis = histos.add<TH1>("Tracks/selection", "trackSelection", kTH1F, {{40, 0.5, 40.5}})->GetXaxis();
   hselAxis->SetBinLabel(1, "Tracks read");
@@ -621,8 +744,33 @@ void qaEventTrack::init(InitContext const&)
  * Fill reco level histograms.
  */
 //**************************************************************************************************
-template <bool IS_MC, typename C, typename T>
-void qaEventTrack::fillRecoHistograms(const C& collision, const T& tracks, const aod::FullTracks& tracksUnfiltered)
+template <bool IS_MC, typename T>
+void qaEventTrack::fillRecoHistogramsAllTracks(const T& tracks)
+{
+  for (const auto& track : tracks) {
+    /// all tracks
+    histos.fill(HIST("Tracks/KineUnmatchTracks/trackCollMatch"), 1.f);
+    if (track.has_collision()) {
+      /// tracks assigned to a collision
+      histos.fill(HIST("Tracks/KineUnmatchTracks/trackCollMatch"), 2.f);
+    } else {
+      /// tracks not assigned to any reconsructed collision
+      histos.fill(HIST("Tracks/KineUnmatchTracks/trackCollMatch"), 3.f);
+      if constexpr (IS_MC) {
+        if (!track.has_mcParticle()) {
+          /// fake track
+          histos.fill(HIST("Tracks/KineUnmatchTracks/trackCollMatch"), 4.f);
+        }
+      }
+      histos.fill(HIST("Tracks/KineUnmatchTracks/pt"), track.pt());
+      histos.fill(HIST("Tracks/KineUnmatchTracks/eta"), track.eta());
+      histos.fill(HIST("Tracks/KineUnmatchTracks/phi"), track.phi());
+    }
+  }
+}
+///////////////////////////////////////////////////////////////
+template <bool IS_MC, typename C, typename T, typename T_UNF>
+void qaEventTrack::fillRecoHistogramsGroupedTracks(const C& collision, const T& tracks, const T_UNF& tracksUnfiltered)
 {
   // fill reco collision related histograms
   if (!isSelectedCollision<true>(collision)) {
