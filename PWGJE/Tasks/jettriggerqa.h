@@ -150,6 +150,10 @@ struct JetTriggerQA {
       {fgkNPtBins, kMinPt, kMaxPt, "#it{p}_{T}^{jet} (GeV)"},
       {fgkNPtBins, kMinPt, kMaxPt, "#it{E}"}
       });
+    spectra.add("hTrackPt", "Track pt", HistType::kTH2F, {
+      {fgkNPtBins, kMinPt, kMaxPt, "#it{p}_{T}^{jet} (GeV)"},
+      {fgkNPtBins, kMinPt, kMaxPt, "#it{p}_{T}^{track} (GeV)"}
+      });
   }
 
   void SoftDrop(aod::Jet const& jet,
