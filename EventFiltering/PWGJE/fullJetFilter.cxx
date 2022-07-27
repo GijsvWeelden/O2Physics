@@ -44,20 +44,20 @@ using namespace o2::framework::expressions;
 static const std::vector<std::string> matchInfoNames {"MinimumBias", "Patch", "MatchedJet"};
 
 struct fullJetFilter {
-  enum { kMinimumBias = 0,
-    kPatch,
-    kMatchedJet,
-    kCategories };
+  enum { kMatchedJet = 0,
+         kCategories };
 
   //event selection cuts
   Configurable<float> selectionHighPtTrack{"selectionHighPtTrack", 10., "Minimum track pT trigger threshold"};       //we want to keep all events having a track with pT above this
-  Configurable<float> selectionJetChHighPt{"selectionJetChHighPt", 40., "Minimum charged jet pT trigger threshold"}; //we want to keep all events having a charged jet with pT above this
+  Configurable<float> selectionJetPt{"selectionJetPt", 25., "Minimum charged jet pT trigger threshold"}; //we want to keep all events having a charged jet with pT above this
   Configurable<int> fMatchDist{"fMatchDist", 5, "Matching distance in number of towers"}; // Maximum clusters/patch distance
   // Acceptance cuts
   Configurable<float> cfgVertexCut{"cfgVertexCut", 10.0f, "Accepted z-vertex range"};
   Configurable<float> cfgTrackEtaCut{"cfgTrackEtaCut", 0.9f, "Eta range for tracks"};
   Configurable<float> cfgTrackLowPtCut{"cfgTrackLowPtCut", 0.1f, "Minimum constituent pT"};
   // TODO: Complete jet should be inside the EMCal. Use fiducial cuts.
+  // EMCAL: phi (1.40, 3.26), |eta| < 0.7
+  // DCAL: [phi (320, 327) deg, |eta| < 0.7] && [phi (4.54, 5.70), 0.23 < |eta| < 0.7]
   Configurable<float> cfgJetEtaCut{"cfgJetEtaCut", 0.7f, "Maximum (absolute) jet eta, dimensions of EMCal"};
   Configurable<float> cfgJetPhiMin{"cfgJetPhiMin", 1.396f, "Minimum jet phi, dimensions of EMCal"}; // 80 degrees
   Configurable<float> cfgJetPhiMax{"cfgJetPhiMax", 3.264f, "Maximum jet phi, dimensions of EMCal"}; // 187 degrees
@@ -184,121 +184,30 @@ struct fullJetFilter {
 
   //using TrackCandidates = soa::Filtered<soa::Join<aod::Tracks, aod::TrackSelection>>;
 
-  void process(//soa::Filtered<soa::Join<aod::Collisions, aod::EvSels>>::iterator const& collision,
+  void process(soa::Filtered<soa::Join<aod::Collisions, aod::EvSels>>::iterator const& collision,
                //TrackCandidates const& tracks,
-               aod::Jets const& jets,
-               aod::Tracks const& tracks,
-               aod::JetTrackConstituents const& constituents,
-               aod::JetConstituentsSub const& constituentsSub)
+               aod::Jets const& jets
+              //  aod::Tracks const& tracks,
+              //  aod::JetTrackConstituents const& constituents,
+              //  aod::JetConstituentsSub const& constituentsSub
+              )
   {
-    /* I assume process is called for each event and in init we have cut on jet eta and phi
-     * TODO: How do we access the patches, clusters, full jets?
-     * findMaxPatch(); // Does the event have a patch? Here we also cut on patch energy as a pre-selection
-     * if (!maxPatch) break;
-     * for (auto& jet : jets){
-     * if (jet.pt() < minJetPt) break;
-     * if (jet.pt() < maxMatchedJet.pt()) break; // maxMatchedJet is the matched jet with highest pt
-     * for (auto& cluster : clusters){
-     * if (!isJetCluster(jet, cluster)) break; // Cluster must belong to jet
-     * if (cluster.E() < minClusE) break; // Cluster must pass energy cut (? does it?)
-     * fMaxMatchedPatchEta =  fMatchDist * 0.0143;
-     * fMaxMatchedPatchPhi = fMatchDist * 0.0143; // Convert matching distance to towers
-     * matchDist = fMaxMatchedPatchEta*fMaxMatchedPatchEta + fMaxMatchedPatchPhi*fMaxMatchedPatchPhi;
-     * patchClusDiff = (cluster.eta() - maxPatch.eta())^2 + (cluster.phi() - maxPatch.phi())^2;
-     * if (patchClusDiff > matchDist) break; // Cluster must be sufficiently close to patch
-     * // mcp is the cluster:
-     * Double_t tmpTrig[18] = {jet->Pt(), jetPt, jet->Eta(), jet->Phi(), jet->E(), fMaxPatch->GetPatchE(), fMaxPatch->GetEtaGeo(), fMaxPatch->GetPhiGeo(), (Double_t)fMaxPatch->GetADCAmp(), mClusterE, mcp.PseudoRapidity(), mcp.Phi() };
-     * for (i{0}; i<18; i++){
-     * jetTrig[i] = tmpTrig[i];
-     * } // for loop
-     * eventMatched = true;
-     * maxMatchedJet = jet;
-     * } // clusters
-     * } // jets
-     * if (eventMatched){ // After the loop, check if event was matched
-     * hist->Fill(jetTrig);
-     * spectra.fill(HIST("hname"), jetTrig); //?
-     * }
-     * */
-
     // collision process loop
     bool keepEvent[kCategories]{false};
-    //spectra.fill(HIST("fCollZpos"), collision.posZ());
-    keepEvent[kMinimumBias] = true;
 
-    for (auto jet : jets)
+    // TODO: Check that there is an emcal trigger for this event
+    // Can we implement this as a filter on the event table?
+
+    // selectedClusters const& clusters
+    // for (const auto& cluster : clusters) {
+    for (auto& jet : jets)
     {
-        jetConstituents.clear();
-        jetReclustered.clear();
-
-        // Retrieve constituent info
-        if (cfg_DoConstSub) {
-          for (const auto& constituent : constituentsSub) {
-            fillConstituents(constituent, jetConstituents);
-          }
-        } else {
-          for (const auto& constituentIndex : constituents) {
-            auto constituent = constituentIndex.track();
-            fillConstituents(constituent, jetConstituents);
-          }
+        if (jet.pt() > selectionJetPt){
+          spectra.fill(HIST("fJet"), jet.pt());
+          keepEvent[kMatchedJet] = true;
+          break;
         }
-        //fastjet::ClusterSequenceArea clusterSeq(jetReclusterer.findJets(jetConstituents, jetReclustered));
-        // jetReclustered = sorted_by_pt(jetReclustered);
-        // fastjet::PseudoJet daughterSubJet = jetReclustered[0];
-        // fastjet::PseudoJet parentSubJet1;
-        // fastjet::PseudoJet parentSubJet2;
-/*
-        bool softDropped = false;
-        int nsd = 0.0;
-        auto zg = -1.0;
-        auto rg = -1.0;
-        while (daughterSubJet.has_parents(parentSubJet1, parentSubJet2)) {
-          if (parentSubJet1.perp() < parentSubJet2.perp()) {
-            std::swap(parentSubJet1, parentSubJet2);
-          }
-          auto z = parentSubJet2.perp() / (parentSubJet1.perp() + parentSubJet2.perp());
-          auto r = parentSubJet1.delta_R(parentSubJet2);
-          if (z >= cfg_zCut * TMath::Power(r / cfg_jetR, cfg_beta)) {
-            if (!softDropped) {
-              zg = z;
-              rg = r;
-              spectra.fill(HIST("fJetZg"), jet.pt(), zg);
-              spectra.fill(HIST("fJetRg"), jet.pt(), rg);
-              softDropped = true;
-            }
-            nsd++;
-          }
-          daughterSubJet = parentSubJet1;
-        }
-        spectra.fill(HIST("fJetnsd"), jet.pt(), nsd);
-        */
     }
-
-     /*
-    //Check whether there is a high pT track
-    for (auto& track : tracks) { // start loop over tracks
-      spectra.fill(HIST("fMBTrack"), track.pt(), track.phi(), track.eta());
-      if (track.pt() >= selectionHighPtTrack) {
-        spectra.fill(HIST("fTrack"), track.pt(), track.phi(), track.eta());
-        //spectra.fill(HIST("fTrackPtSelected"), track.pt()); //track pT which passed the cut
-        keepEvent[kPatch] = true;
-        //break;
-      }
-    }
-    // */
-     /*
-    //Check whether there is a high pT charged jet
-    for (auto& jet : jets) { // start loop over charged jets
-      spectra.fill(HIST("fMBJet"), jet.pt(), jet.phi(), jet.eta()); //charged jet pT
-      spectra.fill(HIST("fMBJetZg"), jet.pt(), jet.zg());
-      spectra.fill(HIST("fMBJetRg"), jet.pt(), jet.rg());
-      spectra.fill(HIST("fMBJetNsd"), jet.pt(), jet.nsd());
-      if (jet.pt() >= selectionJetChHighPt)
-        spectra.fill(HIST("fJet"), jet.pt(), jet.phi(), jet.eta());
-        keepEvent[kMatchedJet] = true;
-      //  break;
-    }
-    // */
 
     //count events which passed the selections
     for (int iDecision{0}; iDecision < kCategories; ++iDecision) {
@@ -307,7 +216,7 @@ struct fullJetFilter {
       }
     }
 
-    tags(keepEvent[0], keepEvent[1], keepEvent[2]);
+    tags(keepEvent[0]);
   } // process()
 };
 
