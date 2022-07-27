@@ -66,7 +66,7 @@ void JetTriggerQA::ChargeFragmentation(aod::Jet const& jet, std::vector<fastjet:
   for (auto track : jetConstituents){
     z = track.px() * jet.px() + track.py() * jet.py() + track.pz() * jet.pz();
     z /= (jet.p() * jet.p());
-    spectra.fill(HIST("hJetChargeFrag"), z);
+    spectra.fill(HIST("hJetChargeFrag"), jet.pt(), z);
   }
 }
 

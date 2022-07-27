@@ -126,23 +126,25 @@ struct JetTriggerQA {
       {fgkNPtBins, kMinPt, kMaxPt, "#it{p}_{T}^{jet} (GeV)"},
       {50, 0., 1., "#it{p}_{T}^{D}"}
       });
-    spectra.add("hJetScaledMass", "Jet scaled mass", HistType::kTH1F, {
+    spectra.add("hJetScaledMass", "Jet scaled mass", HistType::kTH2F, {
+      {fgkNPtBins, kMinPt, kMaxPt, "#it{p}_{T}^{jet} (GeV)"},
       {200, 0., 2., "#it{m}/#it{p}_{T}"}
       });
-    spectra.add("hJetChargeFrag", "Jet Charge Fragmentation", HistType::kTH1F, {
+    spectra.add("hJetChargeFrag", "Jet Charge Fragmentation", HistType::kTH2F, {
+      {fgkNPtBins, kMinPt, kMaxPt, "#it{p}_{T}^{jet} (GeV)"},
       {100, 0., 1., "#it{F}^{jet}"}
       });
     spectra.add("hJetAngularities_11", "Jet Angularities 1,1: girth", HistType::kTH2F, {
       {fgkNPtBins, kMinPt, kMaxPt, "#it{p}_{T}^{jet} (GeV)"},
-      {20, 0., 1., "#lambda_{1}^{1}"}
+      {20, 0., 1., "#it{z}^{1}#theta^{1}"}
       });
     spectra.add("hJetAngularities_21", "Jet Angularities 2,1", HistType::kTH2F, {
       {fgkNPtBins, kMinPt, kMaxPt, "#it{p}_{T}^{jet} (GeV)"},
-      {20, 0., 1., "#lambda_{2}^{1}"}
+      {20, 0., 1., "#it{z}^{2}#theta{1}"}
       });
     spectra.add("hJetAngularities_12", "Jet Angularities 1,2", HistType::kTH2F, {
       {fgkNPtBins, kMinPt, kMaxPt, "#it{p}_{T}^{jet} (GeV)"},
-      {20, 0., 1., "#lambda_{1}^{2}"}
+      {20, 0., 1., "#it{z}^{1}#theta{2}"}
       });
     spectra.add("hClusterE", "Cluster E", HistType::kTH2F, {
       {fgkNPtBins, kMinPt, kMaxPt, "#it{p}_{T}^{jet} (GeV)"},
@@ -176,7 +178,7 @@ struct JetTriggerQA {
               //  aod::JetFilters const& jetFilter)
   {
     spectra.fill(HIST("hJetMass"), jet.pt(), jet.mass());
-    spectra.fill(HIST("hJetScaledMass"), jet.mass() / jet.pt());
+    spectra.fill(HIST("hJetScaledMass"), jet.pt(), jet.mass() / jet.pt());
 
     jetConstituents.clear();
     jetClusterConstituents.clear();
