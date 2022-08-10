@@ -53,7 +53,7 @@ DECLARE_SOA_COLUMN(HighPtTrack, hasHighPtTrack, bool); //! event contains high-p
 DECLARE_SOA_COLUMN(JetChHighPt, hasJetChHighPt, bool); //! high-pT charged jet
 
 // full jets
-DECLARE_SOA_COLUMN(MinimumBias, hasMinimumBias, bool); //! is a minimum bias event
+// DECLARE_SOA_COLUMN(MinimumBias, hasMinimumBias, bool); //! is a minimum bias event
 DECLARE_SOA_COLUMN(Patch, hasPatch, bool); //! event contains a patch
 DECLARE_SOA_COLUMN(MatchedJet, hasMatchedJet, bool); //! matched full jet
 
@@ -128,7 +128,8 @@ using JetFilter = JetFilters::iterator;
 
 // full jets
 DECLARE_SOA_TABLE(FJetFilters, "AOD", "FJetFilters", //!
-                  filtering::MinimumBias, filtering::Patch, filtering::MatchedJet);
+                  // filtering::MinimumBias,
+                  filtering::Patch, filtering::MatchedJet);
 
 using FJetFilter = FJetFilters::iterator;
 
