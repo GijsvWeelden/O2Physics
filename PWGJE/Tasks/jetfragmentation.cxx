@@ -59,7 +59,7 @@ struct JetFragmentation {
   ConfigurableAxis binVtxZ{"binVtxZ", {200, -20, 20}, ""};
 
   ConfigurableAxis binDiff{"binDiff", {51, -5.5f, 5.5f}, ""};
-  ConfigurableAxis binRatio{"binRatio", {100, -0.5f, 9.5f}, ""};        // Ratio of pt, eta, phi
+  ConfigurableAxis binRatio{"binRatio", {100, -0.5f, 9.5f}, ""};      // Ratio of pt, eta, phi
   ConfigurableAxis binMatchDist{"binMatchDist", {10, 0.f, 0.5f}, ""}; // Distance between matched jets
 
   ConfigurableAxis binCount{"binCount", {1, .5f, 1.5f}, ""};
