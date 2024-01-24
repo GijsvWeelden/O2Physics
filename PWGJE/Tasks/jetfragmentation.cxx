@@ -746,7 +746,9 @@ struct JetFragmentation {
 <<<<<<< HEAD
   void processDummy(JetTracks const& tracks) {}
 =======
-  void processDummy(JetTracks const& track) {}
+  void processDummy(JetTracks const& track)
+  {
+  }
 >>>>>>> 70916401 (First implementation of V0 fragmentation for data)
   PROCESS_SWITCH(JetFragmentation, processDummy, "Dummy process function turned on by default", true);
 
