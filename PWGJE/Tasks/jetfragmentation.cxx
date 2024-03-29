@@ -46,9 +46,6 @@ using ChargedJetsWithConstituents = soa::Join<aod::ChargedJets, aod::ChargedJetC
 struct JetFragmentation {
   HistogramRegistry registry{"registry"};
 
-  std::vector<int> pdgVector = {211, 321, 2212, 111, 130, 310, 311, 3122};
-  std::vector<std::string> hadronVector = {"#pi^{#pm}", "#it{K}^{#pm}", "#it{p}^{#pm}", "#pi^{0}", "#it{K}^{0}_{L}", "#it{K}^{0}_{S}", "#it{K}^{0}", "#Lambda^{0}"};
-
   Configurable<std::string> evSel{"evSel", "sel8", "choose event selection"};
   Configurable<float> vertexZCut{"vertexZCut", 10.f, "vertex z cut"};
 
@@ -84,7 +81,6 @@ struct JetFragmentation {
   ConfigurableAxis binTheta{"binTheta", {40, -0.05f, 0.395f}, ""};
   ConfigurableAxis binJetR{"binJetR", {6, 0.05f, 0.65f}, ""};
   ConfigurableAxis binTrackPt{"binTrackPt", {200, 0.f, 100.f}, ""};
-  ConfigurableAxis binPDG{"binPDG", {static_cast<double>(pdgVector.size()), -0.5f, static_cast<double>(pdgVector.size()) - 0.5f}, ""};
   ConfigurableAxis binVtxZ{"binVtxZ", {200, -20, 20}, ""};
 
   ConfigurableAxis binPtTrackDiff{"binPtTrackDiff", {121, -20.5f, 100.5f}, ""};
@@ -165,7 +161,6 @@ struct JetFragmentation {
     AxisSpec partXiAxis = {binXi, "#xi^{ part}"};
     AxisSpec partThetaAxis = {binTheta, "#theta^{ part}"};
 
-    AxisSpec pdgAxis = {binPDG, ""};
     AxisSpec trackPtAxis = {binTrackPt, "#it{p}_{T}^{tr}"};
     AxisSpec ptTrackDiffAxis = {binPtTrackDiff, "#it{p}_{T}^{track} - #it{p}_{T}^{particle}"};
     AxisSpec ptDiffAxis = {binPtDiff, "#it{p}_{T}^{jet, det} - #it{p}_{T}^{jet, part}"};
