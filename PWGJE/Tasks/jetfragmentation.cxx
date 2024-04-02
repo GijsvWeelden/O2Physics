@@ -68,9 +68,6 @@ struct JetFragmentation {
   Configurable<double> k0sMassAccWindow{"k0sMassAccWindow", 0.03, "k0sMassAccWindow"};
   Configurable<double> lambdaMassAccWindow{"lambdaMassAccWindow", 0.01, "lambdaMassAccWindow"};
   Configurable<double> antilambdaMassAccWindow{"antilambdaMassAccWindow", 0.01, "antilambdaMassAccWindow"};
-  Configurable<double> k0sMassRejWindow{"k0sMassRejWindow", 0.01, "k0sMassRejWindow"};
-  Configurable<double> lambdaMassRejWindow{"lambdaMassRejWindow", 0.005, "lambdaMassRejWindow"};
-  Configurable<double> antilambdaMassRejWindow{"antilambdaMassRejWindow", 0.005, "antilambdaMassRejWindow"};
 
   // Binning
   ConfigurableAxis binJetPt{"binJetPt", {40, 0.f, 200.f}, ""};
@@ -123,8 +120,6 @@ struct JetFragmentation {
 
   Partition<MatchedMcDJets> detJetEtaPartition = (aod::jet::eta > matchedDetJetEtaMin) && (aod::jet::eta < matchedDetJetEtaMax);
   Partition<MatchedMcDJets> detJetEtaV0Partition = (aod::jet::eta > v0EtaMin + aod::jet::r * 0.01f) && (aod::jet::eta < v0EtaMax - aod::jet::r * 0.01f);
-  // Partition<ChargedJetsWithConstituents> dataJetEtaPartition = (aod::jet::eta > dataJetEtaMin) && (aod::jet::eta < dataJetEtaMax);
-  // Partition<ChargedJetsWithConstituents> dataJetEtaV0Partition = (aod::jet::eta > v0EtaMin + aod::jet::r * 0.01f) && (aod::jet::eta < v0EtaMax - aod::jet::r * 0.01f);
 
   Preslice<MyTracks> TracksPerCollision = aod::track::collisionId;
   Preslice<aod::V0Datas> V0sPerCollision = aod::v0data::collisionId;
@@ -685,12 +680,7 @@ struct JetFragmentation {
       return false;
     }
     bool k0sMassCondition = (TMath::Abs(v0.mK0Short() - o2::constants::physics::MassK0Short) < k0sMassAccWindow);
-    bool lambdaMassCondition = (TMath::Abs(v0.mLambda() - o2::constants::physics::MassLambda0) < lambdaMassRejWindow);
-    bool antilambdaMassCondition = (TMath::Abs(v0.mAntiLambda() - o2::constants::physics::MassLambda0Bar) < antilambdaMassRejWindow);
     if (!k0sMassCondition) {
-      return false;
-    }
-    if (lambdaMassCondition || antilambdaMassCondition) {
       return false;
     }
     return true;
@@ -705,13 +695,8 @@ struct JetFragmentation {
     if (ctauLambda > lifetimecutLambda) {
       return false;
     }
-    bool k0sMassCondition = (TMath::Abs(v0.mK0Short() - o2::constants::physics::MassK0Short) < k0sMassRejWindow);
     bool lambdaMassCondition = (TMath::Abs(v0.mLambda() - o2::constants::physics::MassLambda0) < lambdaMassAccWindow);
-    bool antilambdaMassCondition = (TMath::Abs(v0.mAntiLambda() - o2::constants::physics::MassLambda0Bar) < antilambdaMassRejWindow);
     if (!lambdaMassCondition) {
-      return false;
-    }
-    if (k0sMassCondition || antilambdaMassCondition) {
       return false;
     }
     return true;
@@ -726,13 +711,8 @@ struct JetFragmentation {
     if (ctauAntiLambda > lifetimecutLambda) {
       return false;
     }
-    bool k0sMassCondition = (TMath::Abs(v0.mK0Short() - o2::constants::physics::MassK0Short) < k0sMassRejWindow);
-    bool lambdaMassCondition = (TMath::Abs(v0.mLambda() - o2::constants::physics::MassLambda0) < lambdaMassRejWindow);
     bool antilambdaMassCondition = (TMath::Abs(v0.mAntiLambda() - o2::constants::physics::MassLambda0Bar) < antilambdaMassAccWindow);
     if (!antilambdaMassCondition) {
-      return false;
-    }
-    if (k0sMassCondition || lambdaMassCondition) {
       return false;
     }
     return true;
