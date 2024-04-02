@@ -56,14 +56,13 @@ struct JetFragmentation {
   Configurable<float> v0EtaMin{"v0EtaMin", -0.75, "minimum data V0 eta"};
   Configurable<float> v0EtaMax{"v0EtaMax", 0.75, "maximum data V0 eta"};
 
-  Configurable<double> v0cospa{"v0cospa", 0.995, "V0 CosPA"};
-  Configurable<double> dcav0dau{"dcav0dau", 1.0, "DCA V0 Daughters"};
-  Configurable<double> dcanegtopv{"dcanegtopv", .1, "DCA Neg To PV"};
-  Configurable<double> dcapostopv{"dcapostopv", .1, "DCA Pos To PV"};
-  Configurable<double> v0radius{"v0radius", 5.0, "V0 Radius"};
-  Configurable<double> lifetimecutK0S{"lifetimecutK0S", 20., "lifetimecutK0S"};
-  Configurable<double> lifetimecutLambda{"lifetimecutLambda", 25., "lifetimecutLambda"};
-  Configurable<double> TpcPidNsigmaCut{"TpcPidNsigmaCut", 5., "TpcPidNsigmaCut"};
+  Configurable<double> v0cospaMin{"v0cospaMin", 0.995, "V0 CosPA"};
+  Configurable<double> dcav0dauMax{"dcav0dauMax", 1.0, "DCA V0 Daughters"};
+  Configurable<double> dcaprMin{"dcaprMin", .1, "DCA proton To PV"};
+  Configurable<double> dcapiMin{"dcapiMin", .1, "DCA pion To PV"};
+  Configurable<double> v0radiusMin{"v0radiusMin", 5.0, "V0 Radius"};
+  Configurable<double> lifetimeK0SMin{"lifetimeK0SMin", 20., "lifetimeK0SMin"};
+  Configurable<double> lifetimeLambdaMin{"lifetimeLambdaMin", 25., "lifetimeLambdaMin"};
 
   Configurable<double> k0sMassAccWindow{"k0sMassAccWindow", 0.03, "k0sMassAccWindow"};
   Configurable<double> lambdaMassAccWindow{"lambdaMassAccWindow", 0.01, "lambdaMassAccWindow"};
@@ -169,10 +168,12 @@ struct JetFragmentation {
     AxisSpec matchDistAxis = {binMatchDist, "#Delta"};
 
     AxisSpec ptJetRelDiffAxis = {binPtRelDiff, "(#it{p}_{T}^{jet, det} - #it{p}_{T}^{jet, part})/#it{p}_{T, jet}^{part}"};
-    AxisSpec ptTrackRelDiffAxis = {binPtRelDiff, "(#it{p}_{T}^{jet, det} - #it{p}_{T}^{jet, part})/#it{p}_{T, jet}^{part}"};
+    AxisSpec ptTrackRelDiffAxis = {binPtRelDiff, "(#it{p}_{T}^{track, det} - #it{p}_{T}^{track, part})/#it{p}_{T, track}^{part}"};
     AxisSpec zRelDiffAxis = {binZRelDiff, "(#it{p}_{T}^{jet, det} - #it{p}_{T}^{jet, part})/#it{p}_{T, jet}^{part}"};
 
     AxisSpec V0PtAxis = {binV0Pt, "#it{p}_{T}^{V0}"};
+    AxisSpec V0PtRatioAxis = {binPtRatio, "#it{p}_{T}^{V0, det}/#it{p}_{T, V0}^{part}"};
+    AxisSpec V0PtRelDiffAxis = {binPtRelDiff, "(#it{p}_{T}^{V0, det} - #it{p}_{T}^{V0, part})/#it{p}_{T, V0}^{part}"};
     AxisSpec V0EtaAxis = {binV0Eta, "#eta^{V0}"};
     AxisSpec V0PhiAxis = {binV0Phi, "#varphi^{V0}"};
     AxisSpec V0detPtAxis = {binV0Pt, "#it{p}_{T}^{V0, det}"};
@@ -427,6 +428,7 @@ struct JetFragmentation {
     if (doprocessMcMatchedV0 || doprocessMcMatchedV0Frag) {
       registry.add("matching/V0/nV0sEvent", "nV0sDet per event", HistType::kTH1D, {v0Count});
       registry.add("matching/V0/V0PartPtDetPt", "V0PartPtDetPt", HistType::kTH2D, {V0partPtAxis, V0detPtAxis});
+      registry.add("matching/V0/V0PartPtRatioPtRelDiffPt", "V0PartPtRatioRelDiffPt", HistType::kTH3D, {V0partPtAxis, V0PtRatioAxis, V0PtRelDiffAxis});
     } // doprocessMcMatchedV0 || doprocessMcMatchedV0Frag
 
     if (doprocessMcMatchedV0) {
@@ -649,22 +651,16 @@ struct JetFragmentation {
   template <typename V0Type>
   bool IsV0Candidate(V0Type const& v0)
   {
-    if (v0.eta() < v0EtaMin || v0.eta() > v0EtaMax) {
+    if (v0.eta() < v0EtaMin || v0.eta() > v0EtaMax) { // TODO: Should be rapidity, mass matters!
       return false;
     }
-    if (TMath::Abs(v0.dcanegtopv()) < dcanegtopv) {
+    if (v0.dcaV0daughters() > dcav0dauMax) {
       return false;
     }
-    if (TMath::Abs(v0.dcapostopv()) < dcapostopv) {
+    if (v0.v0radius() < v0radiusMin) {
       return false;
     }
-    if (v0.dcaV0daughters() > dcav0dau) {
-      return false;
-    }
-    if (v0.v0radius() < v0radius) {
-      return false;
-    }
-    if (v0.v0cosPA() < v0cospa) {
+    if (v0.v0cosPA() < v0cospaMin) {
       return false;
     }
     return true;
@@ -675,8 +671,11 @@ struct JetFragmentation {
     if (!IsV0Candidate(v0)) {
       return false;
     }
+    if (v0.dcanegtopv() < dcapiMin || v0.dcapostopv() < dcapiMin) {
+      return false;
+    }
     double ctauK0s = v0.distovertotmom(collision.posX(), collision.posY(), collision.posZ()) * o2::constants::physics::MassK0Short;
-    if (ctauK0s > lifetimecutK0S) {
+    if (ctauK0s > lifetimeK0SMin) {
       return false;
     }
     bool k0sMassCondition = (TMath::Abs(v0.mK0Short() - o2::constants::physics::MassK0Short) < k0sMassAccWindow);
@@ -691,8 +690,11 @@ struct JetFragmentation {
     if (!IsV0Candidate(v0)) {
       return false;
     }
+    if (v0.dcanegtopv() < dcapiMin || v0.dcapostopv() < dcaprMin) {
+      return false;
+    }
     double ctauLambda = v0.distovertotmom(collision.posX(), collision.posY(), collision.posZ()) * o2::constants::physics::MassLambda0;
-    if (ctauLambda > lifetimecutLambda) {
+    if (ctauLambda > lifetimeLambdaMin) {
       return false;
     }
     bool lambdaMassCondition = (TMath::Abs(v0.mLambda() - o2::constants::physics::MassLambda0) < lambdaMassAccWindow);
@@ -707,8 +709,11 @@ struct JetFragmentation {
     if (!IsV0Candidate(v0)) {
       return false;
     }
+    if (v0.dcanegtopv() < dcaprMin || v0.dcapostopv() < dcapiMin) {
+      return false;
+    }
     double ctauAntiLambda = v0.distovertotmom(collision.posX(), collision.posY(), collision.posZ()) * o2::constants::physics::MassLambda0Bar;
-    if (ctauAntiLambda > lifetimecutLambda) {
+    if (ctauAntiLambda > lifetimeLambdaMin) {
       return false;
     }
     bool antilambdaMassCondition = (TMath::Abs(v0.mAntiLambda() - o2::constants::physics::MassLambda0Bar) < antilambdaMassAccWindow);
@@ -774,6 +779,7 @@ struct JetFragmentation {
           double ptPartV0 = particleMotherOfNeg.pt();
           int pdg = particleMotherOfNeg.pdgCode();
           registry.fill(HIST("matching/V0/V0PartPtDetPt"), ptPartV0, v0.pt());
+          registry.fill(HIST("matching/V0/V0PartPtRatioPtRelDiffPt"), ptPartV0, v0.pt() / ptPartV0, (v0.pt() - ptPartV0) / ptPartV0);
 
           if (pdg == 310) { // K0S
             registry.fill(HIST("matching/V0/K0SPtEtaPhi"), ptPartV0, v0.pt(), v0.eta(), v0.phi());
