@@ -60,7 +60,7 @@ struct JetFragmentation {
   Configurable<double> dcav0dauMax{"dcav0dauMax", 1.0, "DCA V0 Daughters"};
   Configurable<double> dcaprMin{"dcaprMin", .1, "DCA proton To PV"};
   Configurable<double> dcapiMin{"dcapiMin", .1, "DCA pion To PV"};
-  Configurable<double> v0radiusMin{"v0radiusMin", 5.0, "V0 Radius"};
+  Configurable<double> v0radiusMin{"v0radiusMin", 1.2, "V0 Radius"};
   Configurable<double> lifetimeK0SMin{"lifetimeK0SMin", 20., "lifetimeK0SMin"};
   Configurable<double> lifetimeLambdaMin{"lifetimeLambdaMin", 25., "lifetimeLambdaMin"};
 
