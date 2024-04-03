@@ -426,7 +426,7 @@ DECLARE_SOA_DYNAMIC_COLUMN(IsBDTSel, isBDTSel, //! Flag to check if V0 passes BD
 } // namespace v0data
 
 DECLARE_SOA_TABLE(V0Presels, "AOD", "V0PRESEL", //! preselectors for V0s
-                  o2::soa::Index<>, v0data::PreselectorFlag, v0data::IsCustomSel, v0data::IsJetSel, v0data::IsBDTSel);
+                  o2::soa::Index<>, v0data::PreselFlag, v0data::IsCustomSel<v0data::PreselFlag>, v0data::IsJetSel<v0data::PreselFlag>, v0data::IsBDTSel<v0data::PreselFlag>);
 
 DECLARE_SOA_TABLE(V0Indices, "AOD", "V0INDEX", //! index table when using AO2Ds
                   o2::soa::Index<>, v0data::PosTrackId, v0data::NegTrackId, v0data::CollisionId, v0data::V0Id, o2::soa::Marker<1>);
