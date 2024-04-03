@@ -403,6 +403,30 @@ DECLARE_SOA_DYNAMIC_COLUMN(IsStandardV0, isStandardV0, //! is standard V0
 DECLARE_SOA_DYNAMIC_COLUMN(IsPhotonTPConly, isPhotonTPConly, //! is photon V0
                            [](uint8_t V0Type) -> bool { return V0Type & (1 << 1); });
 } // namespace v0data
+//______________________________________________________
+namespace v0data
+{
+//______________________________________________________
+// V0PRESELS
+enum PreselFlagEnum
+{
+  Custom = 0x1, //! custom preselection
+  Jet    = 0x2, //! jet preselection
+  BDT    = 0x4  //! BDT preselection
+};
+
+DECLARE_SOA_COLUMN(PreselFlag, preselFlag, uint8_t); //! presel flag for reference
+
+DECLARE_SOA_DYNAMIC_COLUMN(IsCustomSel, isCustomSel, //! Flag to check if V0 passes custom preselection
+                           [](uint8_t preselectorFlag) -> bool { return preselectorFlag & o2::aod::v0data::Custom; });
+DECLARE_SOA_DYNAMIC_COLUMN(IsJetSel, isJetSel, //! Flag to check if V0 passes jet preselection
+                           [](uint8_t preselectorFlag) -> bool { return preselectorFlag & o2::aod::v0data::Jet; });
+DECLARE_SOA_DYNAMIC_COLUMN(IsBDTSel, isBDTSel, //! Flag to check if V0 passes BDT preselection
+                           [](uint8_t preselectorFlag) -> bool { return preselectorFlag & o2::aod::v0data::BDT; });
+} // namespace v0data
+
+DECLARE_SOA_TABLE(V0Presels, "AOD", "V0PRESEL", //! preselectors for V0s
+                  o2::soa::Index<>, v0data::PreselectorFlag, v0data::IsCustomSel, v0data::IsJetSel, v0data::IsBDTSel);
 
 DECLARE_SOA_TABLE(V0Indices, "AOD", "V0INDEX", //! index table when using AO2Ds
                   o2::soa::Index<>, v0data::PosTrackId, v0data::NegTrackId, v0data::CollisionId, v0data::V0Id, o2::soa::Marker<1>);
