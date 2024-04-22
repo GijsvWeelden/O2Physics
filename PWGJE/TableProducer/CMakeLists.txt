@@ -86,6 +86,11 @@ o2physics_add_dpl_workflow(subtractor-eventwiseconstituent
                     SOURCES eventwiseConstituentSubtractor.cxx
                     PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::PWGJECore O2Physics::AnalysisCore
                     COMPONENT_NAME Analysis)
+
+o2physics_add_dpl_workflow(jet-data-producer-v0
+                    SOURCES jetv0dataproducer.cxx
+                    PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::PWGJECore O2Physics::AnalysisCore
+                    COMPONENT_NAME Analysis)
 endif()
 
 
