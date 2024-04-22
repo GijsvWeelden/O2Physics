@@ -26,6 +26,7 @@
 #include "PWGJE/DataModel/Jet.h"
 #include "PWGJE/Core/JetDerivedDataUtilities.h"
 #include "PWGJE/Core/JetHFUtilities.h"
+#include "PWGJE/Core/JetV0Utilities.h"
 
 using namespace o2;
 using namespace o2::framework;
@@ -44,7 +45,7 @@ struct JetV0DataProducerTask {
 
   void processV0MC(aod::McParticle const& particle)
   { // can loop over McV0Labels tables if we want to only store matched V0Particles
-    if (jethfutilities::isV0Particle(particle)) {
+    if (jetv0utilities::isV0Particle(particle)) {
       std::vector<int> mothersId;
       if (particle.has_mothers()) {
         auto mothersIdTemps = particle.mothersIds();
@@ -64,7 +65,7 @@ struct JetV0DataProducerTask {
         }
       }
       auto pdgParticle = pdgDatabase->GetParticle(particle.pdgCode());
-      jV0McParticlesTable(particle.pt(), particle.eta(), particle.phi(), particle.y(), particle.e(), pdgParticle->Mass(), particle.pdgCode(), particle.getGenStatusCode(), particle.getHepMCStatusCode(), particle.isPhysicalPrimary(), mothersId, daughtersId, jetv0utilities::setV0ParticleDecayBit(particle));
+      jV0McParticlesTable(particle.mcCollisionId(), particle.globalIndex(), particle.pt(), particle.eta(), particle.phi(), particle.y(), particle.e(), pdgParticle->Mass(), particle.pdgCode(), particle.getGenStatusCode(), particle.getHepMCStatusCode(), particle.isPhysicalPrimary(), mothersId, daughtersId, jetv0utilities::setV0ParticleDecayBit<aod::McParticles>(particle));
       jV0McParentIndexTable(particle.mcCollisionId(), particle.globalIndex());
     }
   }
