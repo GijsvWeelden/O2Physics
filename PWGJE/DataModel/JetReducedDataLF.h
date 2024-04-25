@@ -35,11 +35,13 @@ DECLARE_SOA_INDEX_COLUMN(JMcParticle, mcParticle);
 } // namespace jv0indices
 
 DECLARE_SOA_TABLE(JV0Ids, "AOD", "JV0ID",
+                  o2::soa::Index<>,
                   jv0indices::JCollisionId,
                   jv0indices::PosTrackId,
                   jv0indices::NegTrackId);
 
 DECLARE_SOA_TABLE(StoredJV0Ids, "AOD1", "JV0ID",
+                  o2::soa::Index<>,
                   jv0indices::JCollisionId,
                   jv0indices::PosTrackId,
                   jv0indices::NegTrackId,
