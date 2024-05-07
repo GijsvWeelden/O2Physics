@@ -726,7 +726,7 @@ struct JetFragmentation {
   {
     return (jet.hfcandidatesIds().size() > 0);
   }
-  template<typename T, typename U, typename V>
+  template <typename T, typename U, typename V>
   bool V0sAreMatched(T const& v0, U const& particle, V const& /*tracks*/)
   {
     auto negId = v0.template negTrack_as<V>().template mcParticleId();
@@ -1977,7 +1977,7 @@ struct JetFragmentation {
               }
               break;
             } // if matched
-          } // partV0 loop
+          }   // partV0 loop
 
           if (!isV0Matched) {
             fillMatchingV0Fake(jcoll, detJet, detV0, weight);
@@ -2016,7 +2016,7 @@ struct JetFragmentation {
             fillMatchingV0Miss(partJet, partV0, weight);
           }
         } // partV0 loop
-      } // detJet loop
+      }   // detJet loop
 
       // To account for matched jets where the detector level jet is outside of the eta range (cut applied within this task)
       if (!isJetMatched) {
