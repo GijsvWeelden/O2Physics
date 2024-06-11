@@ -975,6 +975,12 @@ struct JetFragmentation {
       double massRatio = v0.mAntiLambda() / v0.mLambda();
       double massRelDiff = (v0.mLambda() - v0.mAntiLambda()) / v0.mLambda();
 
+      registry.fill(HIST("data/V0/V0CutVariation"), v0.pt(), v0.mK0Short(), v0.mLambda(), v0.mAntiLambda(), v0.v0radius(), ctauK0s, v0.v0cosPA(), TMath::Abs(v0.dcapostopv()), TMath::Abs(v0.dcanegtopv()), v0.dcaV0daughters());
+
+      if (!IsV0Candidate(v0)) {
+        continue;
+      }
+
       registry.fill(HIST("data/V0/V0PtEtaPhi"), v0.pt(), v0.eta(), v0.phi());
       registry.fill(HIST("data/V0/V0PtCtau"), v0.pt(), ctauK0s, ctauLambda, ctauAntiLambda);
       registry.fill(HIST("data/V0/V0PtMass"), v0.pt(), v0.mK0Short(), v0.mLambda(), v0.mAntiLambda());
@@ -982,8 +988,6 @@ struct JetFragmentation {
       registry.fill(HIST("data/V0/V0PtRadiusCosPA"), v0.pt(), v0.v0radius(), v0.v0cosPA());
       registry.fill(HIST("data/V0/V0PtDCAposneg"), v0.pt(), v0.dcapostopv(), v0.dcanegtopv());
       registry.fill(HIST("data/V0/V0PtDCAd"), v0.pt(), v0.dcaV0daughters());
-
-      registry.fill(HIST("data/V0/V0CutVariation"), v0.pt(), v0.mK0Short(), v0.mLambda(), v0.mAntiLambda(), v0.v0radius(), ctauK0s, v0.v0cosPA(), TMath::Abs(v0.dcapostopv()), TMath::Abs(v0.dcanegtopv()), v0.dcaV0daughters());
 
       if (IsLambdaCandidate(collision, v0)) {
         registry.fill(HIST("data/V0/LambdaPtEtaPhi"), v0.pt(), v0.eta(), v0.phi());
