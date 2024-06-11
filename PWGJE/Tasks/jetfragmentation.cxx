@@ -781,10 +781,10 @@ struct JetFragmentation {
     if (ctauK0s > lifetimeK0SMax) {
       return false;
     }
-    bool k0sMassCondition = (TMath::Abs(v0.mK0Short() - o2::constants::physics::MassK0Short) < k0sMassAccWindow);
-    if (!k0sMassCondition) {
-      return false;
-    }
+    // bool k0sMassCondition = (TMath::Abs(v0.mK0Short() - o2::constants::physics::MassK0Short) < k0sMassAccWindow);
+    // if (!k0sMassCondition) {
+    //   return false;
+    // }
     return true;
   }
   template <typename CollisionType, typename V0Type>
@@ -800,10 +800,10 @@ struct JetFragmentation {
     if (ctauLambda > lifetimeLambdaMax) {
       return false;
     }
-    bool lambdaMassCondition = (TMath::Abs(v0.mLambda() - o2::constants::physics::MassLambda0) < lambdaMassAccWindow);
-    if (!lambdaMassCondition) {
-      return false;
-    }
+    // bool lambdaMassCondition = (TMath::Abs(v0.mLambda() - o2::constants::physics::MassLambda0) < lambdaMassAccWindow);
+    // if (!lambdaMassCondition) {
+    //   return false;
+    // }
     return true;
   }
   template <typename CollisionType, typename V0Type>
@@ -819,10 +819,10 @@ struct JetFragmentation {
     if (ctauAntiLambda > lifetimeLambdaMax) {
       return false;
     }
-    bool antilambdaMassCondition = (TMath::Abs(v0.mAntiLambda() - o2::constants::physics::MassLambda0Bar) < antilambdaMassAccWindow);
-    if (!antilambdaMassCondition) {
-      return false;
-    }
+    // bool antilambdaMassCondition = (TMath::Abs(v0.mAntiLambda() - o2::constants::physics::MassLambda0Bar) < antilambdaMassAccWindow);
+    // if (!antilambdaMassCondition) {
+    //   return false;
+    // }
     return true;
   }
 
