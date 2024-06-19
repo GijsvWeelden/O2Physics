@@ -63,7 +63,7 @@ using MatchedMCPV0Jets = soa::Join<MCPV0Jets, aod::V0ChargedMCParticleLevelJetsM
 using MatchedMCPV0JetsWithConstituents = soa::Join<MCPV0Jets, aod::V0ChargedMCParticleLevelJetConstituents, aod::V0ChargedMCParticleLevelJetsMatchedToV0ChargedMCDetectorLevelJets>;
 
 struct JetFragmentation {
-  HistogramRegistry registry{"registry"};
+  HistogramRegistry registry{"registry"}; // CallSumw2 = false?
 
   Configurable<std::string> evSel{"evSel", "sel8WithoutTimeFrameBorderCut", "choose event selection"};
   Configurable<float> vertexZCut{"vertexZCut", 10.f, "vertex z cut"};
@@ -488,6 +488,7 @@ struct JetFragmentation {
 
     if (doprocessMcMatchedV0 || doprocessMcMatchedV0Frag || doprocessMcMatchedV0JetsFrag) {
       registry.add("matching/V0/nV0sEvent", "nV0sDet per event", HistType::kTH1D, {v0Count});
+      registry.add("matching/V0/nV0sEventWeighted", "nV0sDet per event (weighted)", HistType::kTH1D, {v0Count});
     } // doprocessMcMatchedV0 || doprocessMcMatchedV0Frag
 
     if (doprocessMcMatchedV0 || doprocessMcMatchedV0JetsFrag) {
@@ -1772,6 +1773,7 @@ struct JetFragmentation {
       isV0Used[i] = false;
     }
     registry.fill(HIST("matching/V0/nV0sEvent"), kNV0s);
+    registry.fill(HIST("matching/V0/nV0sEventWeighted"), kNV0s, weight);
 
     int kNParticles = mcParticles.size();
     bool isParticleUsed[kNParticles];
@@ -2030,6 +2032,7 @@ struct JetFragmentation {
     }
     double weight = jcoll.mcCollision().weight();
     registry.fill(HIST("matching/V0/nV0sEvent"), v0s.size());
+    registry.fill(HIST("matching/V0/nV0sEventWeighted"), v0s.size(), weight);
 
     // TODO: This is not very efficient
     for (const auto& v0 : v0s) {
