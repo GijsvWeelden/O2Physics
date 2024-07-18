@@ -741,6 +741,43 @@ struct JetFragmentation {
     }
   } // init
 
+  // TODO: This should contain a lookup table or function containing the various V0 weights
+  // Call this for every particle in the jet to get a vector of weight vectors
+  template <typename C, typename V>
+  vector<double> getV0SignalWeight(C const& coll, V const& v0)
+  {
+    // 0: bkg, 1: K0S, 2: Lambda, 3: AntiLambda
+    vector<double> w(4, 0.);
+    double purity = 0.8; // TODO: need getter to set this
+
+    bool isK = IsK0SCandidate(coll, v0);
+    bool isL = IsLambdaCandidate(coll, v0);
+    bool isAL = IsAntiLambdaCandidate(coll, v0);
+
+    // Candidate for a single particle
+    switch(isK + isL + isAL) {
+      case 0:
+        break;
+      case 1:
+        w[1] = (double)isK * purity;
+        w[2] = (double)isL * purity;
+        w[3] = (double)isAL * purity;
+        break;
+      case 2:
+        w[1] = (double)isK * (2./3.) * purity;
+        w[2] = (isK ? 2./3. : 0.5) * purity;
+        w[3] = (isK ? 2./3. : 0.5) * purity;
+        break;
+      case 3:
+        w[1] = 0.5 * purity;
+        w[2] = 0.25 * purity;
+        w[3] = 0.25 * purity;
+        break;
+    }
+    w[0] = 1. - (w[1] + w[2] + w[3]);
+    return w;
+  }
+
   template <typename JetType>
   bool JetContainsV0s(JetType const& jet)
   {
