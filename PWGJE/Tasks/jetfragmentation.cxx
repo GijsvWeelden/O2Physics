@@ -2085,6 +2085,8 @@ struct JetFragmentation {
   }
   PROCESS_SWITCH(JetFragmentation, processDataV0Frag, "Data V0 fragmentation", false);
 
+  //
+  //
   // ---------------- V0 jets ----------------
   void processDataV0JetsFrag(soa::Filtered<JetCollisions>::iterator const& jcoll, soa::Join<aod::V0ChargedJets, aod::V0ChargedJetConstituents> const& v0jets, CandidatesV0Data const& v0s)
   {
@@ -2122,6 +2124,10 @@ struct JetFragmentation {
     } // Jet loop
   }
   PROCESS_SWITCH(JetFragmentation, processDataV0JetsFrag, "Data V0 jets fragmentation", false);
+
+  void processDataV0JetsFragWithWeights()
+  {}
+  PROCESS_SWITCH(JetFragmentation, processDataV0JetsFragWithWeights, "Data V0 jets fragmentation with weights", false);
 
   void processMcMatchedV0JetsFrag(soa::Filtered<JetCollisionsMCD>::iterator const& jcoll, JetMcCollisions const&, MatchedMCDV0JetsWithConstituents const& v0jetsMCD, MatchedMCPV0JetsWithConstituents const& v0jetsMCP, soa::Join<CandidatesV0MCD, aod::McV0Labels> const& v0s, CandidatesV0MCP const& pv0s, JetTracksMCD const& jTracks, JetParticles const&)
   {
