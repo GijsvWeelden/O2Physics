@@ -784,7 +784,9 @@ struct JetFragmentation {
     int nBitsPerParticle = round(log2(nClasses));
     int nBitsPerInt = sizeof(uint32_t) * 8;
 
+    // Check if the input configuration is parseable
     if (nClasses & (nClasses - 1) != 0) {
+      // It's likely possible to make this work for non-power of 2 classes, but it's not needed and therefore not implemented
       LOGF(warning, "Number of classes (%d) must be a power of 2", nClasses);
       return v;
     }
@@ -812,6 +814,30 @@ struct JetFragmentation {
     }
     return v;
   } // convertState
+  vector<double> correctedValues(vector<int> state, vector<double> values)
+  {
+    // Assumes values = (z1, z2, ..., zn, ptjet)
+    vector<double> v(values);
+    double r = 0;
+    int nParticles = state.size();
+
+    if (values.size() != nParticles + 1) {
+      LOGF(warning, "Number of values (%d) must be equal to the number of particles (%d) + 1!", values.size(), nParticles);
+      return v;
+    }
+    for (int ip = 0; ip < nParticles; ip++) {
+      if (state[ip] == 0) {
+        r += values[ip];
+      }
+    }
+    for (int ip = 0; ip < nParticles; ip++) {
+      if (state[ip] == 0) {
+        v[ip] = values[ip] / (1-r);
+      }
+    }
+    v[nParticles] = values[nParticles] * (1-r);
+    return v;
+  }
 
   template <typename JetType>
   bool JetContainsV0s(JetType const& jet)
