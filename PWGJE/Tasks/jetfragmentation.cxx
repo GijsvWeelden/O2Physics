@@ -776,7 +776,42 @@ struct JetFragmentation {
     }
     w[0] = 1. - (w[1] + w[2] + w[3]);
     return w;
-  }
+  } // getV0SignalWeight
+  vector<int> convertState(uint32_t state, int nParticles, int nClasses = 4)
+  {
+    vector<int> v(nParticles, nClasses);
+    int nStates = pow(nClasses, nParticles);
+    int nBitsPerParticle = round(log2(nClasses));
+    int nBitsPerInt = sizeof(uint32_t) * 8;
+
+    if (nClasses & (nClasses - 1) != 0) {
+      LOGF(warning, "Number of classes (%d) must be a power of 2", nClasses);
+      return v;
+    }
+    if (nStates <= 0) {
+      LOGF(warning, "Illegal number of states (%d)! %s", nStates, (nStates == 0) ? "" : "Max = 2^31");
+      return v;
+    }
+    if (nParticles * nBitsPerParticle > nBitsPerInt) {
+      LOGF(warning, "Number of bits required to parse the state (%d * %d = %d) is too large for %d bits per int!", nParticles, nBitsPerParticle, nParticles * nBitsPerParticle, nBitsPerInt);
+      return v;
+    }
+    if (state < 0 || state >= nStates) {
+      LOGF(warning, "Illegal state! State %d %s", state, (state < 0) ? "< 0" : (">= " + to_string(nStates)));
+      return v;
+    }
+
+    for (int ip = 0; ip < nParticles; ip++) {
+      double value = 0;
+      int startBit = ip * nBitsPerParticle;
+      for (int ib = 0; ib < nBitsPerParticle; ib++) {
+        int bitVal = ( (state & (1 << bit)) > 0);
+        value += bitVal * TMath::Pow(2, ib);
+      }
+      v[ip] = value;
+    }
+    return v;
+  } // convertState
 
   template <typename JetType>
   bool JetContainsV0s(JetType const& jet)
