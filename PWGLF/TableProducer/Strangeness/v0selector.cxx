@@ -73,7 +73,8 @@ struct V0SelectorTask {
   Configurable<std::vector<float>> AntiLambdaFraction{"AntiLambdaFraction", {2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0}, "Fraction of AntiLambda to randomly select"};
 
   void init(InitContext const&)
-  {}
+  {
+  }
 
   template <typename T, typename U>
   bool K0SCuts(T const& collision, U const& v0)

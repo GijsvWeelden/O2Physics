@@ -253,13 +253,13 @@ struct V0QA {
     registry.fill(HIST("inclusive/V0Flags"), 0, 3, isK0S * isRejected);
     registry.fill(HIST("inclusive/V0Flags"), 3, 0, isK0S * isRejected);
 
-    registry.fill(HIST("inclusive/V0Flags"), 1, 2,  isLambda * isAntiLambda);
-    registry.fill(HIST("inclusive/V0Flags"), 2, 1,  isLambda * isAntiLambda);
-    registry.fill(HIST("inclusive/V0Flags"), 1, 3,  isLambda * isRejected);
-    registry.fill(HIST("inclusive/V0Flags"), 3, 1,  isLambda * isRejected);
+    registry.fill(HIST("inclusive/V0Flags"), 1, 2, isLambda * isAntiLambda);
+    registry.fill(HIST("inclusive/V0Flags"), 2, 1, isLambda * isAntiLambda);
+    registry.fill(HIST("inclusive/V0Flags"), 1, 3, isLambda * isRejected);
+    registry.fill(HIST("inclusive/V0Flags"), 3, 1, isLambda * isRejected);
 
-    registry.fill(HIST("inclusive/V0Flags"), 2, 3,  isAntiLambda * isRejected);
-    registry.fill(HIST("inclusive/V0Flags"), 3, 2,  isAntiLambda * isRejected);
+    registry.fill(HIST("inclusive/V0Flags"), 2, 3, isAntiLambda * isRejected);
+    registry.fill(HIST("inclusive/V0Flags"), 3, 2, isAntiLambda * isRejected);
   }
   PROCESS_SWITCH(V0QA, processFlags, "V0 flags", false);
 

@@ -18,9 +18,9 @@ namespace v0flags
 {
 
 enum V0Flags : uint8_t {
-  FK0S = 0x1,    // K0S candidate
-  FLAMBDA = 0x2, // Lambda candidate
-  FANTILAMBDA = 0x4,  // AntiLambda candidate
+  FK0S = 0x1,        // K0S candidate
+  FLAMBDA = 0x2,     // Lambda candidate
+  FANTILAMBDA = 0x4, // AntiLambda candidate
   FREJECTED = 0x8    // Does not satisfy any of the above, or is randomly rejected
 };
 
