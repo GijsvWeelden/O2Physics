@@ -433,7 +433,7 @@ struct V0QA {
     return (track.itsClusterMap() & (1 << ibit));
   }
 
-  template<typename T, typename U>
+  template <typename T, typename U>
   void fillTrackQa(U const& v0)
   {
     auto posTrack = v0.posTrack.track_as<DaughterTracks>();
