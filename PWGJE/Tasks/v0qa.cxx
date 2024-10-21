@@ -182,54 +182,6 @@ struct V0QA {
     auto daughters = particle.daughtersIds();
     return ((negId == daughters[0] && posId == daughters[1]) || (posId == daughters[0] && negId == daughters[1]));
   }
-  template <typename T, typename U>
-  bool isV0Reconstructed(T collision, U const& v0, int pdg)
-  {
-    // TODO: This should use the JE V0 selector once it it ready!
-    if (v0.v0cosPA() < v0cospaMin)
-      return false;
-    if (v0.v0radius() < v0radiusMin)
-      return false;
-    if (v0.dcaV0daughters() > dcav0dauMax)
-      return false;
-
-    // K0S
-    if (TMath::Abs(pdg) == 310) {
-      if (TMath::Abs(v0.dcapostopv()) < dcapiMin)
-        return false;
-      if (TMath::Abs(v0.dcanegtopv()) < dcapiMin)
-        return false;
-      if (TMath::Abs(v0.yK0Short()) > yK0SMax)
-        return false;
-      float ctauK0S = v0.distovertotmom(collision.posX(), collision.posY(), collision.posZ()) * o2::constants::physics::MassK0Short;
-      if (ctauK0S > lifetimeK0SMax)
-        return false;
-    }
-    // Lambda
-    if (pdg == 3122) {
-      if (TMath::Abs(v0.dcapostopv()) < dcaprMin)
-        return false;
-      if (TMath::Abs(v0.dcanegtopv()) < dcapiMin)
-        return false;
-      if (TMath::Abs(v0.yLambda()) > yLambdaMax)
-        return false;
-      float ctauLambda = v0.distovertotmom(collision.posX(), collision.posY(), collision.posZ()) * o2::constants::physics::MassLambda0;
-      if (ctauLambda > lifetimeLambdaMax)
-        return false;
-    }
-    if (pdg == -3122) {
-      if (TMath::Abs(v0.dcapostopv()) < dcapiMin)
-        return false;
-      if (TMath::Abs(v0.dcanegtopv()) < dcaprMin)
-        return false;
-      if (TMath::Abs(v0.yLambda()) > yLambdaMax)
-        return false;
-      float ctauAntiLambda = v0.distovertotmom(collision.posX(), collision.posY(), collision.posZ()) * o2::constants::physics::MassLambda0Bar;
-      if (ctauAntiLambda > lifetimeLambdaMax)
-        return false;
-    }
-    return true;
-  }
 
   void processDummy(CandidatesV0MCD const&) {}
   PROCESS_SWITCH(V0QA, processDummy, "Dummy process function turned on by default", true);
@@ -263,7 +215,7 @@ struct V0QA {
   }
   PROCESS_SWITCH(V0QA, processFlags, "V0 flags", false);
 
-  void processMcD(soa::Filtered<JetCollisionsMCD>::iterator const& jcoll, JetMcCollisions const&, soa::Join<CandidatesV0MCD, aod::McV0Labels> const& v0s, aod::McParticles const&)
+  void processMcD(soa::Filtered<JetCollisionsMCD>::iterator const& jcoll, JetMcCollisions const&, soa::Join<CandidatesV0MCD, aod::McV0Labels, aod::V0SignalFlags> const& v0s, aod::McParticles const&)
   {
     registry.fill(HIST("inclusive/hEvents"), 0.5);
     if (!isCollisionReconstructed(jcoll, eventSelection)) {
@@ -279,7 +231,7 @@ struct V0QA {
       int pdg = v0.mcParticle().pdgCode();
 
       // Check V0 decay kinematics
-      if (!isV0Reconstructed(jcoll, v0, pdg))
+      if (v0.isRejectedCandidate())
         continue;
 
       // K0S
@@ -357,14 +309,14 @@ struct V0QA {
 
     for (const auto& mcdjet : mcdjets) {
       // if (!jetfindingutilities::isInEtaAcceptance(jet, -99., -99., v0EtaMin, v0EtaMax))
-      for (const auto& v0 : mcdjet.template candidates_as<soa::Join<CandidatesV0MCD, aod::McV0Labels>>()) {
+      for (const auto& v0 : mcdjet.template candidates_as<soa::Join<CandidatesV0MCD, aod::McV0Labels, aod::V0SignalFlags>>()) {
         if (!v0.has_mcParticle()) {
           continue;
         }
         int pdg = v0.mcParticle().pdgCode();
 
         // Check V0 decay kinematics
-        if (!isV0Reconstructed(jcoll, v0, pdg))
+        if (v0.isRejectedCandidate())
           continue;
 
         // K0S
@@ -398,7 +350,7 @@ struct V0QA {
     for (const auto& mcdjet : mcdjets) {
       // if (!jetfindingutilities::isInEtaAcceptance(mcdjet, -99., -99., v0EtaMin, v0EtaMax))
       for (const auto& mcpjet : mcdjet.template matchedJetGeo_as<MatchedMCPV0JetsWithConstituents>()) {
-        for (const auto& v0 : mcdjet.template candidates_as<soa::Join<CandidatesV0MCD, aod::McV0Labels>>()) {
+        for (const auto& v0 : mcdjet.template candidates_as<soa::Join<CandidatesV0MCD, aod::McV0Labels, aod::V0SignalFlags>>()) {
           if (!v0.has_mcParticle())
             continue;
 
@@ -408,7 +360,7 @@ struct V0QA {
             int pdg = pv0.pdgCode();
 
             // Check V0 decay kinematics
-            if (!isV0Reconstructed(jcoll, v0, pdg))
+            if (v0.isRejectedCandidate())
               continue;
 
             // K0S
@@ -478,7 +430,7 @@ struct V0QA {
   }
   PROCESS_SWITCH(V0QA, processMcPJets, "Particle level V0s in jets", false);
 
-  void processCollisionAssociation(soa::Filtered<JetCollisionsMCD>::iterator const& jcoll, soa::Join<CandidatesV0MCD, aod::McV0Labels> const& v0s, soa::Join<JetMcCollisions, aod::JMcCollisionPIs> const&, aod::McCollisions const&, aod::McParticles const&)
+  void processCollisionAssociation(soa::Filtered<JetCollisionsMCD>::iterator const& jcoll, soa::Join<CandidatesV0MCD, aod::McV0Labels, aod::V0SignalFlags> const& v0s, soa::Join<JetMcCollisions, aod::JMcCollisionPIs> const&, aod::McCollisions const&, aod::McParticles const&)
   {
     // Based on PWGLF/Tasks/Strangeness/derivedlambdakzeroanalysis.cxx
     if (!jcoll.has_mcCollision()) {
@@ -497,7 +449,7 @@ struct V0QA {
       int pdg = v0.mcParticle().pdgCode();
 
       // Check V0 decay kinematics
-      if (!isV0Reconstructed(jcoll, v0, pdg))
+      if (v0.isRejectedCandidate())
         continue;
 
       registry.fill(HIST("collisions/V0PtEta"), pv0.pt(), pv0.eta(), weight);
@@ -546,7 +498,7 @@ struct V0QA {
   }
   PROCESS_SWITCH(V0QA, processCollisionAssociation, "V0 collision association", false);
 
-  void processFeeddown(soa::Filtered<JetCollisionsMCD>::iterator const& jcoll, soa::Join<CandidatesV0MCD, aod::McV0Labels> const& v0s, CandidatesV0MCP const&, soa::Join<JetMcCollisions, aod::JMcCollisionPIs> const&, aod::McCollisions const&, aod::McParticles const&)
+  void processFeeddown(soa::Filtered<JetCollisionsMCD>::iterator const& jcoll, soa::Join<CandidatesV0MCD, aod::McV0Labels, aod::V0SignalFlags> const& v0s, CandidatesV0MCP const&, soa::Join<JetMcCollisions, aod::JMcCollisionPIs> const&, aod::McCollisions const&, aod::McParticles const&)
   {
     // Based on PWGLF/Tasks/Strangeness/derivedlambdakzeroanalysis.cxx
     if (!jcoll.has_mcCollision()) {
@@ -562,7 +514,7 @@ struct V0QA {
       int pdg = v0.mcParticle().pdgCode();
 
       // Check V0 decay kinematics
-      if (!isV0Reconstructed(jcoll, v0, pdg))
+      if (v0.isRejectedCandidate())
         continue;
       // Feed-down from Xi
       if (!v0.has_mcMotherParticle())
@@ -582,7 +534,7 @@ struct V0QA {
   }
   PROCESS_SWITCH(V0QA, processFeeddown, "Inclusive feeddown", false);
 
-  void processFeeddownJets(soa::Filtered<JetCollisionsMCD>::iterator const& jcoll, MCDV0JetsWithConstituents const& mcdjets, soa::Join<CandidatesV0MCD, aod::McV0Labels> const&, CandidatesV0MCP const&, soa::Join<JetMcCollisions, aod::JMcCollisionPIs> const&, aod::McCollisions const&, aod::McParticles const&)
+  void processFeeddownJets(soa::Filtered<JetCollisionsMCD>::iterator const& jcoll, MCDV0JetsWithConstituents const& mcdjets, soa::Join<CandidatesV0MCD, aod::McV0Labels, aod::V0SignalFlags> const&, CandidatesV0MCP const&, soa::Join<JetMcCollisions, aod::JMcCollisionPIs> const&, aod::McCollisions const&, aod::McParticles const&)
   {
     // Based on PWGLF/Tasks/Strangeness/derivedlambdakzeroanalysis.cxx
     if (!jcoll.has_mcCollision()) {
@@ -599,7 +551,7 @@ struct V0QA {
         int pdg = v0.mcParticle().pdgCode();
 
         // Check V0 decay kinematics
-        if (!isV0Reconstructed(jcoll, v0, pdg))
+        if (v0.isRejectedCandidate())
           continue;
         // Feed-down from Xi
         if (!v0.has_mcMotherParticle())
@@ -631,7 +583,7 @@ struct V0QA {
 
     for (const auto& mcdjet : mcdjets) {
       for (const auto& mcpjet : mcdjet.template matchedJetGeo_as<MatchedMCPV0JetsWithConstituents>()) {
-        for (const auto& v0 : mcdjet.template candidates_as<soa::Join<CandidatesV0MCD, aod::McV0Labels>>()) {
+        for (const auto& v0 : mcdjet.template candidates_as<soa::Join<CandidatesV0MCD, aod::McV0Labels, aod::V0SignalFlags>>()) {
           if (!v0.has_mcParticle())
             continue;
           if (!v0.has_mcMotherParticle())
@@ -644,7 +596,7 @@ struct V0QA {
             int pdg = v0.mcParticle().pdgCode();
 
             // Check V0 decay kinematics
-            if (!isV0Reconstructed(jcoll, v0, pdg))
+            if (v0.isRejectedCandidate())
               continue;
 
             auto mother = v0.mcMotherParticle();
