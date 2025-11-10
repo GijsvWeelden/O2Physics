@@ -49,6 +49,7 @@ using namespace o2::framework;
 using namespace o2::framework::expressions;
 
 using DataV0JetsWithConstituents = soa::Join<aod::V0ChargedJets, aod::V0ChargedJetConstituents>;
+using JetTracksWithPIs = soa::Join<aod::JetTracks, aod::JTrackPIs>;
 
 using CandidatesV0MCDWithLabels = soa::Join<aod::CandidatesV0MCD, aod::McV0Labels>;
 using MatchedMCDV0Jets = soa::Join<aod::V0ChargedMCDetectorLevelJets, aod::V0ChargedMCDetectorLevelJetsMatchedToV0ChargedMCParticleLevelJets>;
@@ -66,6 +67,7 @@ struct JetFragmentation {
   Configurable<bool> doCorrectionWithTracks{"doCorrectionWithTracks", false, "add tracks during background subtraction"};
   Configurable<bool> fillHistsInclusiveV0s{"fillHistsInclusiveV0s", true, "Fill hists for inclusive V0s"};
   Configurable<bool> fillHistsJets{"fillHistsJets", true, "Fill hists for jets"};
+  Configurable<bool> skipJetsWithSharedDaughters{"skipJetsWithSharedDaughters", false, "Skip jets that contain V0s that share a daughter track"};
 
   Configurable<std::vector<float>> ptBinsK0S{"ptBinsK0S", {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 40.0}, "K0S pt Vals"};
   Configurable<std::vector<float>> ptBinsLambda{"ptBinsLambda", {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 10.0, 15.0, 20.0, 25.0}, "Lambda pt Vals"};
@@ -1312,6 +1314,15 @@ struct JetFragmentation {
     auto posId = v0.template posTrack_as<T>().mcParticleId();
     auto daughters = particle.daughtersIds();
     return ((negId == daughters[0] && posId == daughters[1]) || (posId == daughters[0] && negId == daughters[1]));
+  }
+  template <typename T, typename U>
+  bool v0sShareDaughter(U const& trigger, U const& associate)
+  {
+    auto trigNeg = trigger.template negTrack_as<T>();
+    auto trigPos = trigger.template posTrack_as<T>();
+    auto assocNeg = associate.template negTrack_as<T>();
+    auto assocPos = associate.template posTrack_as<T>();
+    return (trigNeg == assocNeg || trigNeg == assocPos || trigPos == assocNeg || trigPos == assocPos);
   }
   template <typename V0Type>
   double getReflectedMass(V0Type const& v0, bool isLambda)
@@ -2732,7 +2743,7 @@ struct JetFragmentation {
   void processDummy(aod::JetTracks const&) {}
   PROCESS_SWITCH(JetFragmentation, processDummy, "Dummy process function turned on by default", true);
 
-  void processDataV0(soa::Filtered<aod::JetCollisions>::iterator const& coll, DataV0JetsWithConstituents const& jets, aod::CandidatesV0Data const& V0s, aod::JetTracks const&)
+  void processDataV0(soa::Filtered<aod::JetCollisions>::iterator const& coll, DataV0JetsWithConstituents const& jets, aod::CandidatesV0Data const& V0s, JetTracksWithPIs const&)
   {
     registry.fill(HIST("data/hEvents"), 0.5);
     if (!jetderiveddatautilities::selectCollision(coll, eventSelectionBits))
@@ -2752,6 +2763,24 @@ struct JetFragmentation {
     for (const auto& jet : jets) {
       if (!jetfindingutilities::isInEtaAcceptance(jet, -99., -99., v0EtaMin, v0EtaMax))
         continue;
+
+      if (skipJetsWithSharedDaughters && jetContainsV0s(jet)) {
+        for (const auto& trigger : jet.template candidates_as<aod::CandidatesV0Data>()) {
+          if (trigger.isRejectedCandidate())
+            continue;
+
+          for (const auto& associate : jet.template candidates_as<aod::CandidatesV0Data>()) {
+            if (associate.isRejectedCandidate())
+              continue;
+
+            if (trigger == associate)
+              continue;
+
+            if (v0sShareDaughter<JetTracksWithPIs>(trigger, associate))
+              break; // Skip this jet
+          }
+        }
+      } // if (skipJetsWithSharedDaughters && jetContainsV0s(jet))
 
       fillDataJet(jet);
       fillDataV0sInPerpCone(coll, jet, V0s);
@@ -2807,7 +2836,7 @@ struct JetFragmentation {
         std::vector<int> state = convertState(M, nV0inJet, nV0Classes);
         std::vector<double> corrected;
         if (doCorrectionWithTracks)
-          corrected = correctedValuesPlusTracks<aod::CandidatesV0Data, aod::JetTracks>(state, jet);
+          corrected = correctedValuesPlusTracks<aod::CandidatesV0Data, JetTracksWithPIs>(state, jet);
         else
           corrected = correctedValues(state, values);
 
