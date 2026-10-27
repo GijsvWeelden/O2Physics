@@ -532,6 +532,7 @@ struct JetFragmentation {
 
       // Perp Cone
       registry.add("data/PC/JetPtEtaV0Pt", "JetPtEtaV0Pt", HistType::kTH3D, {jetPtAxis, etaAxis, v0PtAxis});
+      registry.add("data/PC/JetPtEtaV0Z", "JetPtEtaV0Z", HistType::kTH3D, {jetPtAxis, etaAxis, axisV0Z});
       registry.add("data/PC/V0PtEtaPhi", "V0 #it{p}_{T}, #eta, #phi", HistType::kTH3D, {v0PtAxis, v0EtaAxis, v0PhiAxis});
       registry.add("data/PC/V0PtCtau", "V0PtCtau", HistType::kTHnSparseD, {v0PtAxis, v0CtauAxis, v0CtauAxis, v0CtauAxis});
       registry.add("data/PC/V0PtMass", "V0PtMass", HistType::kTHnSparseD, {v0PtAxis, k0SMassAxis, lambdaMassAxis, lambdaMassAxis});
@@ -543,6 +544,7 @@ struct JetFragmentation {
       // K0S
       registry.add("data/PC/JetPtK0SPtMass", "JetPtK0SPtMass", HistType::kTH3D, {jetPtAxis, v0PtAxis, k0SMassAxis});
       registry.add("data/PC/JetPtEtaK0SPt", "JetPtEtaK0SPt", HistType::kTH3D, {jetPtAxis, etaAxis, v0PtAxis});
+      registry.add("data/PC/JetPtEtaK0SZ", "JetPtEtaK0SZ", HistType::kTH3D, {jetPtAxis, etaAxis, axisV0Z});
       registry.add("data/PC/K0SPtEtaPhi", "K0SPtEtaPhi", HistType::kTH3D, {v0PtAxis, v0EtaAxis, v0PhiAxis});
       registry.add("data/PC/K0SPtCtauMass", "K0SPtCtauMass", HistType::kTH3D, {v0PtAxis, v0CtauAxis, k0SMassAxis});
       registry.add("data/PC/K0SPtRadiusCosPA", "K0SPtRadiusCosPA", HistType::kTH3D, {v0PtAxis, v0RadiusAxis, v0CosPAAxis});
@@ -552,6 +554,7 @@ struct JetFragmentation {
       // Lambda
       registry.add("data/PC/JetPtLambdaPtMass", "JetPtLambdaPtMass", HistType::kTH3D, {jetPtAxis, v0PtAxis, lambdaMassAxis});
       registry.add("data/PC/JetPtEtaLambdaPt", "JetPtEtaLambdaPt", HistType::kTH3D, {jetPtAxis, etaAxis, v0PtAxis});
+      registry.add("data/PC/JetPtEtaLambdaZ", "JetPtEtaLambdaZ", HistType::kTH3D, {jetPtAxis, etaAxis, axisV0Z});
       registry.add("data/PC/LambdaPtEtaPhi", "LambdaPtEtaPhi", HistType::kTH3D, {v0PtAxis, v0EtaAxis, v0PhiAxis});
       registry.add("data/PC/LambdaPtCtauMass", "LambdaPtCtauMass", HistType::kTH3D, {v0PtAxis, v0CtauAxis, lambdaMassAxis});
       registry.add("data/PC/LambdaPtRadiusCosPA", "LambdaPtRadiusCosPA", HistType::kTH3D, {v0PtAxis, v0RadiusAxis, v0CosPAAxis});
@@ -561,6 +564,7 @@ struct JetFragmentation {
       // AntiLambda
       registry.add("data/PC/JetPtAntiLambdaPtMass", "JetPtAntiLambdaPtMass", HistType::kTH3D, {jetPtAxis, v0PtAxis, lambdaMassAxis});
       registry.add("data/PC/JetPtEtaAntiLambdaPt", "JetPtEtaAntiLambdaPt", HistType::kTH3D, {jetPtAxis, etaAxis, v0PtAxis});
+      registry.add("data/PC/JetPtEtaAntiLambdaZ", "JetPtEtaAntiLambdaZ", HistType::kTH3D, {jetPtAxis, etaAxis, axisV0Z});
       registry.add("data/PC/AntiLambdaPtEtaPhi", "AntiLambdaPtEtaPhi", HistType::kTH3D, {v0PtAxis, v0EtaAxis, v0PhiAxis});
       registry.add("data/PC/AntiLambdaPtCtauMass", "AntiLambdaPtCtauMass", HistType::kTH3D, {v0PtAxis, v0CtauAxis, lambdaMassAxis});
       registry.add("data/PC/AntiLambdaPtRadiusCosPA", "AntiLambdaPtRadiusCosPA", HistType::kTH3D, {v0PtAxis, v0RadiusAxis, v0CosPAAxis});
@@ -1584,11 +1588,13 @@ struct JetFragmentation {
         continue;
       }
 
+      double z = getMomFrac(jet, v0);
       double ctauLambda = v0.distovertotmom(coll.posX(), coll.posY(), coll.posZ()) * constants::physics::MassLambda0;
       double ctauAntiLambda = v0.distovertotmom(coll.posX(), coll.posY(), coll.posZ()) * constants::physics::MassLambda0Bar;
       double ctauK0s = v0.distovertotmom(coll.posX(), coll.posY(), coll.posZ()) * constants::physics::MassK0Short;
 
       registry.fill(HIST("data/PC/JetPtEtaV0Pt"), jet.pt(), jet.eta(), v0.pt());
+      registry.fill(HIST("data/PC/JetPtEtaV0Z"), jet.pt(), jet.eta(), z);
       registry.fill(HIST("data/PC/V0PtEtaPhi"), v0.pt(), v0.eta(), v0.phi());
       registry.fill(HIST("data/PC/V0PtCtau"), v0.pt(), ctauK0s, ctauLambda, ctauAntiLambda);
       registry.fill(HIST("data/PC/V0PtMass"), v0.pt(), v0.mK0Short(), v0.mLambda(), v0.mAntiLambda());
@@ -1596,11 +1602,12 @@ struct JetFragmentation {
       registry.fill(HIST("data/PC/V0PtRadiusCosPA"), v0.pt(), v0.v0radius(), v0.v0cosPA());
       registry.fill(HIST("data/PC/V0PtDCAposneg"), v0.pt(), v0.dcapostopv(), v0.dcanegtopv());
       registry.fill(HIST("data/PC/V0PtDCAd"), v0.pt(), v0.dcaV0daughters());
-
+      
       if (v0.isLambdaCandidate()) {
         registry.fill(HIST("data/PC/JetPtLambdaPtMass"), jet.pt(), v0.pt(), v0.mLambda());
-
+        
         registry.fill(HIST("data/PC/JetPtEtaLambdaPt"), jet.pt(), jet.eta(), v0.pt());
+        registry.fill(HIST("data/PC/JetPtEtaLambdaZ"), jet.pt(), jet.eta(), z);
         registry.fill(HIST("data/PC/LambdaPtEtaPhi"), v0.pt(), v0.eta(), v0.phi());
         registry.fill(HIST("data/PC/LambdaPtCtauMass"), v0.pt(), ctauLambda, v0.mLambda());
         registry.fill(HIST("data/PC/LambdaPtRadiusCosPA"), v0.pt(), v0.v0radius(), v0.v0cosPA());
@@ -1609,8 +1616,9 @@ struct JetFragmentation {
       }
       if (v0.isAntiLambdaCandidate()) {
         registry.fill(HIST("data/PC/JetPtAntiLambdaPtMass"), jet.pt(), v0.pt(), v0.mAntiLambda());
-
+        
         registry.fill(HIST("data/PC/JetPtEtaAntiLambdaPt"), jet.pt(), jet.eta(), v0.pt());
+        registry.fill(HIST("data/PC/JetPtEtaAntiLambdaZ"), jet.pt(), jet.eta(), z);
         registry.fill(HIST("data/PC/AntiLambdaPtEtaPhi"), v0.pt(), v0.eta(), v0.phi());
         registry.fill(HIST("data/PC/AntiLambdaPtCtauMass"), v0.pt(), ctauAntiLambda, v0.mAntiLambda());
         registry.fill(HIST("data/PC/AntiLambdaPtRadiusCosPA"), v0.pt(), v0.v0radius(), v0.v0cosPA());
@@ -1619,8 +1627,9 @@ struct JetFragmentation {
       }
       if (v0.isK0SCandidate()) {
         registry.fill(HIST("data/PC/JetPtK0SPtMass"), jet.pt(), v0.pt(), v0.mK0Short());
-
+        
         registry.fill(HIST("data/PC/JetPtEtaK0SPt"), jet.pt(), jet.eta(), v0.pt());
+        registry.fill(HIST("data/PC/JetPtEtaK0SZ"), jet.pt(), jet.eta(), z);
         registry.fill(HIST("data/PC/K0SPtEtaPhi"), v0.pt(), v0.eta(), v0.phi());
         registry.fill(HIST("data/PC/K0SPtCtauMass"), v0.pt(), ctauK0s, v0.mK0Short());
         registry.fill(HIST("data/PC/K0SPtRadiusCosPA"), v0.pt(), v0.v0radius(), v0.v0cosPA());
