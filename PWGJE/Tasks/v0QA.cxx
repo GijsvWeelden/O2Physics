@@ -348,16 +348,46 @@ struct V0QA {
       registry.add("sharing/JetPtEtaAntiLambdaZ", "JetPtEtaAntiLambdaZ", HistType::kTH3D, {axisJetPt, axisEta, axisV0Z});
       registry.add("sharing/JetPtEtaV0ZZ", "JetPtEtaV0ZZ", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z});
       registry.add("sharing/JetPtEtaV0ZZDaughterPt", "JetPtEtaV0ZZDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z, axisV0Pt});
+      
+      registry.add("sharing/JetPtEtaK0SPtK0SPt", "JetPtEtaK0SPtK0SPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt});
+      registry.add("sharing/JetPtEtaK0SPtLambdaPt", "JetPtEtaK0SPtLambdaPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt});
+      registry.add("sharing/JetPtEtaK0SPtAntiLambdaPt", "JetPtEtaK0SPtAntiLambdaPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt});
+      registry.add("sharing/JetPtEtaLambdaPtK0SPt", "JetPtEtaLambdaPtK0SPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt});
+      registry.add("sharing/JetPtEtaLambdaPtLambdaPt", "JetPtEtaLambdaPtLambdaPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt});
+      registry.add("sharing/JetPtEtaLambdaPtAntiLambdaPt", "JetPtEtaLambdaPtAntiLambdaPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt});
+      registry.add("sharing/JetPtEtaAntiLambdaPtK0SPt", "JetPtEtaAntiLambdaPtK0SPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt});
+      registry.add("sharing/JetPtEtaAntiLambdaPtLambdaPt", "JetPtEtaAntiLambdaPtLambdaPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt});
+      registry.add("sharing/JetPtEtaAntiLambdaPtAntiLambdaPt", "JetPtEtaAntiLambdaPtAntiLambdaPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt});
+      
+      registry.add("sharing/JetPtEtaK0SPtK0SPtDaughterPt", "JetPtEtaK0SPtK0SPtDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt, axisV0Pt});
+      registry.add("sharing/JetPtEtaK0SPtLambdaPtDaughterPt", "JetPtEtaK0SPtLambdaPtDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt, axisV0Pt});
+      registry.add("sharing/JetPtEtaK0SPtAntiLambdaPtDaughterPt", "JetPtEtaK0SPtAntiLambdaPtDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt, axisV0Pt});
+      registry.add("sharing/JetPtEtaLambdaPtK0SPtDaughterPt", "JetPtEtaLambdaPtK0SPtDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt, axisV0Pt});
+      registry.add("sharing/JetPtEtaLambdaPtLambdaPtDaughterPt", "JetPtEtaLambdaPtLambdaPtDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt, axisV0Pt});
+      registry.add("sharing/JetPtEtaLambdaPtAntiLambdaPtDaughterPt", "JetPtEtaLambdaPtAntiLambdaPtDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt, axisV0Pt});
+      registry.add("sharing/JetPtEtaAntiLambdaPtK0SPtDaughterPt", "JetPtEtaAntiLambdaPtK0SPtDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt, axisV0Pt});
+      registry.add("sharing/JetPtEtaAntiLambdaPtLambdaPtDaughterPt", "JetPtEtaAntiLambdaPtLambdaPtDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt, axisV0Pt});
+      registry.add("sharing/JetPtEtaAntiLambdaPtAntiLambdaPtDaughterPt", "JetPtEtaAntiLambdaPtAntiLambdaPtDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt, axisV0Pt});
+      
+      registry.add("sharing/JetPtEtaK0SZK0SZ", "JetPtEtaK0SZK0SZ", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z});
+      registry.add("sharing/JetPtEtaK0SZLambdaZ", "JetPtEtaK0SZLambdaZ", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z});
+      registry.add("sharing/JetPtEtaK0SZAntiLambdaZ", "JetPtEtaK0SZAntiLambdaZ", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z});
+      registry.add("sharing/JetPtEtaLambdaZK0SZ", "JetPtEtaLambdaZK0SZ", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z});
+      registry.add("sharing/JetPtEtaLambdaZLambdaZ", "JetPtEtaLambdaZLambdaZ", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z});
+      registry.add("sharing/JetPtEtaLambdaZAntiLambdaZ", "JetPtEtaLambdaZAntiLambdaZ", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z});
+      registry.add("sharing/JetPtEtaAntiLambdaZK0SZ", "JetPtEtaAntiLambdaZK0SZ", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z});
+      registry.add("sharing/JetPtEtaAntiLambdaZLambdaZ", "JetPtEtaAntiLambdaZLambdaZ", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z});
+      registry.add("sharing/JetPtEtaAntiLambdaZAntiLambdaZ", "JetPtEtaAntiLambdaZAntiLambdaZ", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z});
 
-      registry.add("sharing/JetK0SK0S", "JetK0SK0S", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt});
-      registry.add("sharing/JetK0SLambda", "JetK0SLambda", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt});
-      registry.add("sharing/JetK0SAntiLambda", "JetK0SAntiLambda", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt});
-      registry.add("sharing/JetLambdaK0S", "JetLambdaK0S", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt});
-      registry.add("sharing/JetLambdaLambda", "JetLambdaLambda", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt});
-      registry.add("sharing/JetLambdaAntiLambda", "JetLambdaAntiLambda", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt});
-      registry.add("sharing/JetAntiLambdaK0S", "JetAntiLambdaK0S", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt});
-      registry.add("sharing/JetAntiLambdaLambda", "JetAntiLambdaLambda", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt});
-      registry.add("sharing/JetAntiLambdaAntiLambda", "JetAntiLambdaAntiLambda", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Pt, axisV0Pt});
+      registry.add("sharing/JetPtEtaK0SZK0SZDaughterPt", "JetPtEtaK0SZK0SZDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z, axisV0Pt});
+      registry.add("sharing/JetPtEtaK0SZLambdaZDaughterPt", "JetPtEtaK0SZLambdaZDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z, axisV0Pt});
+      registry.add("sharing/JetPtEtaK0SZAntiLambdaZDaughterPt", "JetPtEtaK0SZAntiLambdaZDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z, axisV0Pt});
+      registry.add("sharing/JetPtEtaLambdaZK0SZDaughterPt", "JetPtEtaLambdaZK0SZDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z, axisV0Pt});
+      registry.add("sharing/JetPtEtaLambdaZLambdaZDaughterPt", "JetPtEtaLambdaZLambdaZDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z, axisV0Pt});
+      registry.add("sharing/JetPtEtaLambdaZAntiLambdaZDaughterPt", "JetPtEtaLambdaZAntiLambdaZDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z, axisV0Pt});
+      registry.add("sharing/JetPtEtaAntiLambdaZK0SZDaughterPt", "JetPtEtaAntiLambdaZK0SZDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z, axisV0Pt});
+      registry.add("sharing/JetPtEtaAntiLambdaZLambdaZDaughterPt", "JetPtEtaAntiLambdaZLambdaZDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z, axisV0Pt});
+      registry.add("sharing/JetPtEtaAntiLambdaZAntiLambdaZDaughterPt", "JetPtEtaAntiLambdaZAntiLambdaZDaughterPt", HistType::kTHnSparseD, {axisJetPt, axisEta, axisV0Z, axisV0Z, axisV0Pt});
     }
     if (doprocessV0TrackQA) {
       registry.add("tracks/hEvents", "evts", {HistType::kTH1D, {{2, 0.0f, 2.0f}}});
@@ -989,26 +1019,63 @@ struct V0QA {
     registry.fill(HIST("sharing/JetPtEtaV0PtPtDaughterPt"), jet.pt(), jet.eta(), pthard, ptsoft, sharedDaughterPt, weight);
     registry.fill(HIST("sharing/JetPtEtaV0ZZDaughterPt"), jet.pt(), jet.eta(), zhard, zsoft, sharedDaughterPt, weight);
 
-    if (trigger.isK0SCandidate() && associate.isK0SCandidate())
-      registry.fill(HIST("sharing/JetK0SK0S"), jet.pt(), jet.eta(), pthard, ptsoft, weight);
-    if (trigger.isK0SCandidate() && associate.isLambdaCandidate())
-      registry.fill(HIST("sharing/JetK0SLambda"), jet.pt(), jet.eta(), pthard, ptsoft, weight);
-    if (trigger.isK0SCandidate() && associate.isAntiLambdaCandidate())
-      registry.fill(HIST("sharing/JetK0SAntiLambda"), jet.pt(), jet.eta(), pthard, ptsoft, weight);
+    
+    if (trigger.isK0SCandidate() && associate.isK0SCandidate()) {
+      registry.fill(HIST("sharing/JetPtEtaK0SPtK0SPt"), jet.pt(), jet.eta(), pthard, ptsoft, weight);
+      registry.fill(HIST("sharing/JetPtEtaK0SPtK0SPtDaughterPt"), jet.pt(), jet.eta(), pthard, ptsoft, sharedDaughterPt, weight);
+      registry.fill(HIST("sharing/JetPtEtaK0SZK0SZ"), jet.pt(), jet.eta(), zhard, zsoft, weight);
+      registry.fill(HIST("sharing/JetPtEtaK0SZK0SZDaughterPt"), jet.pt(), jet.eta(), zhard, zsoft, sharedDaughterPt, weight);
+    }
+    if (trigger.isK0SCandidate() && associate.isLambdaCandidate()) {
+      registry.fill(HIST("sharing/JetPtEtaK0SPtLambdaPt"), jet.pt(), jet.eta(), pthard, ptsoft, weight);
+      registry.fill(HIST("sharing/JetPtEtaK0SPtLambdaPtDaughterPt"), jet.pt(), jet.eta(), pthard, ptsoft, sharedDaughterPt, weight);
+      registry.fill(HIST("sharing/JetPtEtaK0SZLambdaZ"), jet.pt(), jet.eta(), zhard, zsoft, weight);
+      registry.fill(HIST("sharing/JetPtEtaK0SZLambdaZDaughterPt"), jet.pt(), jet.eta(), zhard, zsoft, sharedDaughterPt, weight);
+    }
+    if (trigger.isK0SCandidate() && associate.isAntiLambdaCandidate()) {
+      registry.fill(HIST("sharing/JetPtEtaK0SPtAntiLambdaPt"), jet.pt(), jet.eta(), pthard, ptsoft, weight);
+      registry.fill(HIST("sharing/JetPtEtaK0SPtAntiLambdaPtDaughterPt"), jet.pt(), jet.eta(), pthard, ptsoft, sharedDaughterPt, weight);
+      registry.fill(HIST("sharing/JetPtEtaK0SZAntiLambdaZ"), jet.pt(), jet.eta(), zhard, zsoft, weight);
+      registry.fill(HIST("sharing/JetPtEtaK0SZAntiLambdaZDaughterPt"), jet.pt(), jet.eta(), zhard, zsoft, sharedDaughterPt, weight);
+    }
 
-    if (trigger.isLambdaCandidate() && associate.isK0SCandidate())
-      registry.fill(HIST("sharing/JetLambdaK0S"), jet.pt(), jet.eta(), pthard, ptsoft, weight);
-    if (trigger.isLambdaCandidate() && associate.isLambdaCandidate())
-      registry.fill(HIST("sharing/JetLambdaLambda"), jet.pt(), jet.eta(), pthard, ptsoft, weight);
-    if (trigger.isLambdaCandidate() && associate.isAntiLambdaCandidate())
-      registry.fill(HIST("sharing/JetLambdaAntiLambda"), jet.pt(), jet.eta(), pthard, ptsoft, weight);
+    if (trigger.isLambdaCandidate() && associate.isK0SCandidate()) {
+      registry.fill(HIST("sharing/JetPtEtaLambdaPtK0SPt"), jet.pt(), jet.eta(), pthard, ptsoft, weight);
+      registry.fill(HIST("sharing/JetPtEtaLambdaPtK0SPtDaughterPt"), jet.pt(), jet.eta(), pthard, ptsoft, sharedDaughterPt, weight);
+      registry.fill(HIST("sharing/JetPtEtaLambdaZK0SZ"), jet.pt(), jet.eta(), zhard, zsoft, weight);
+      registry.fill(HIST("sharing/JetPtEtaLambdaZK0SZDaughterPt"), jet.pt(), jet.eta(), zhard, zsoft, sharedDaughterPt, weight);
+    }
+    if (trigger.isLambdaCandidate() && associate.isLambdaCandidate()) {
+      registry.fill(HIST("sharing/JetPtEtaLambdaPtLambdaPt"), jet.pt(), jet.eta(), pthard, ptsoft, weight);
+      registry.fill(HIST("sharing/JetPtEtaLambdaPtLambdaPtDaughterPt"), jet.pt(), jet.eta(), pthard, ptsoft, sharedDaughterPt, weight);
+      registry.fill(HIST("sharing/JetPtEtaLambdaZLambdaZ"), jet.pt(), jet.eta(), zhard, zsoft, weight);
+      registry.fill(HIST("sharing/JetPtEtaLambdaZLambdaZDaughterPt"), jet.pt(), jet.eta(), zhard, zsoft, sharedDaughterPt, weight);
+    }
+    if (trigger.isLambdaCandidate() && associate.isAntiLambdaCandidate()) {
+      registry.fill(HIST("sharing/JetPtEtaLambdaPtAntiLambdaPt"), jet.pt(), jet.eta(), pthard, ptsoft, weight);
+      registry.fill(HIST("sharing/JetPtEtaLambdaPtAntiLambdaPtDaughterPt"), jet.pt(), jet.eta(), pthard, ptsoft, sharedDaughterPt, weight);
+      registry.fill(HIST("sharing/JetPtEtaLambdaZAntiLambdaZ"), jet.pt(), jet.eta(), zhard, zsoft, weight);
+      registry.fill(HIST("sharing/JetPtEtaLambdaZAntiLambdaZDaughterPt"), jet.pt(), jet.eta(), zhard, zsoft, sharedDaughterPt, weight);
+    }
 
-    if (trigger.isAntiLambdaCandidate() && associate.isK0SCandidate())
-      registry.fill(HIST("sharing/JetAntiLambdaK0S"), jet.pt(), jet.eta(), pthard, ptsoft, weight);
-    if (trigger.isAntiLambdaCandidate() && associate.isLambdaCandidate())
-      registry.fill(HIST("sharing/JetAntiLambdaLambda"), jet.pt(), jet.eta(), pthard, ptsoft, weight);
-    if (trigger.isAntiLambdaCandidate() && associate.isAntiLambdaCandidate())
-      registry.fill(HIST("sharing/JetAntiLambdaAntiLambda"), jet.pt(), jet.eta(), pthard, ptsoft, weight);
+    if (trigger.isAntiLambdaCandidate() && associate.isK0SCandidate()) {
+      registry.fill(HIST("sharing/JetPtEtaAntiLambdaPtK0SPt"), jet.pt(), jet.eta(), pthard, ptsoft, weight);
+      registry.fill(HIST("sharing/JetPtEtaAntiLambdaPtK0SPtDaughterPt"), jet.pt(), jet.eta(), pthard, ptsoft, sharedDaughterPt, weight);
+      registry.fill(HIST("sharing/JetPtEtaAntiLambdaZK0SZ"), jet.pt(), jet.eta(), zhard, zsoft, weight);
+      registry.fill(HIST("sharing/JetPtEtaAntiLambdaZK0SZDaughterPt"), jet.pt(), jet.eta(), zhard, zsoft, sharedDaughterPt, weight);
+    }
+    if (trigger.isAntiLambdaCandidate() && associate.isLambdaCandidate()) {
+      registry.fill(HIST("sharing/JetPtEtaAntiLambdaPtLambdaPt"), jet.pt(), jet.eta(), pthard, ptsoft, weight);
+      registry.fill(HIST("sharing/JetPtEtaAntiLambdaPtLambdaPtDaughterPt"), jet.pt(), jet.eta(), pthard, ptsoft, sharedDaughterPt, weight);
+      registry.fill(HIST("sharing/JetPtEtaAntiLambdaZLambdaZ"), jet.pt(), jet.eta(), zhard, zsoft, weight);
+      registry.fill(HIST("sharing/JetPtEtaAntiLambdaZLambdaZDaughterPt"), jet.pt(), jet.eta(), zhard, zsoft, sharedDaughterPt, weight);
+    }
+    if (trigger.isAntiLambdaCandidate() && associate.isAntiLambdaCandidate()) {
+      registry.fill(HIST("sharing/JetPtEtaAntiLambdaPtAntiLambdaPt"), jet.pt(), jet.eta(), pthard, ptsoft, weight);
+      registry.fill(HIST("sharing/JetPtEtaAntiLambdaPtAntiLambdaPtDaughterPt"), jet.pt(), jet.eta(), pthard, ptsoft, sharedDaughterPt, weight);
+      registry.fill(HIST("sharing/JetPtEtaAntiLambdaZAntiLambdaZ"), jet.pt(), jet.eta(), zhard, zsoft, weight);
+      registry.fill(HIST("sharing/JetPtEtaAntiLambdaZAntiLambdaZDaughterPt"), jet.pt(), jet.eta(), zhard, zsoft, sharedDaughterPt, weight);
+    }
   }
 
   template <typename T, typename U, typename V>
